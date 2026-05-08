@@ -28,6 +28,8 @@ jobs:
 
       - name: Build site
         run: bun run site/build.ts
+        env:
+          BASE_PATH: /opensource-arch
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

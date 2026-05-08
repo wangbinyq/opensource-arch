@@ -17,6 +17,7 @@ const ROOT = import.meta.dir.replace(/\/site$/, "");
 const ANALYSES_DIR = join(ROOT, "analyses");
 const SITE_SRC = join(ROOT, "site/src");
 const OUT_DIR = join(ROOT, "docs");
+const BASE_PATH = (process.env.BASE_PATH || "").replace(/\/+$/, "");
 
 const SITE_TITLE = "OpenSource Arch";
 const SITE_TAGLINE = "著名开源项目架构分析";
@@ -309,7 +310,7 @@ function renderHead(title: string, description: string = ""): string {
       ? `\n  <meta name="description" content="${escapeHtml(description)}">`
       : ""
   }
-  <link rel="stylesheet" href="/opensource-arch/css/styles.css">
+  <link rel="stylesheet" href="${BASE_PATH}/css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
 </head>`;
 }
@@ -318,7 +319,7 @@ function renderIndexPage(analyses: AnalysisMeta[]): string {
   const items = analyses
     .map(
       (a) => `    <li class="index__item">
-      <a class="index__link" href="${a.slug}/">
+      <a class="index__link" href="${BASE_PATH}/${a.slug}/">
         <span class="index__name">${escapeHtml(a.title)}</span>
         <span class="index__meta">${a.language}</span>
       </a>
@@ -354,7 +355,7 @@ function renderArticlePage(a: AnalysisMeta): string {
   return `${renderHead(a.title)}
 <body>
   <div class="page">
-    <a class="back-link" href="/opensource-arch/">
+    <a class="back-link" href="${BASE_PATH}/">
       <span class="back-link__arrow">←</span> 返回目录
     </a>
 
@@ -374,7 +375,7 @@ function renderArticlePage(a: AnalysisMeta): string {
     </article>
 
     <footer class="site-footer">
-      <p><a href="/opensource-arch/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
+      <p><a href="${BASE_PATH}/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
     </footer>
   </div>
 </body>
