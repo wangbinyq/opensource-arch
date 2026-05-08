@@ -83,7 +83,6 @@ function openFullscreen(pre) {
   const pz = Panzoom(svgEl, {
     maxScale: 8,
     minScale: 0.05,
-    contain: "outside",
     cursor: "grab",
     excludeClass: "mermaid-fullscreen__toolbar",
     startScale: 1,

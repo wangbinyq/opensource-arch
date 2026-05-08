@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build": "bun run site/build.ts",
+    "dev": "bun --watch site/dev.ts"
+  },
   "dependencies": {
     "@panzoom/panzoom": "^4.6.2",
     "mermaid": "^11.14.0"
