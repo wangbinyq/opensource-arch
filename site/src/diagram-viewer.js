@@ -58,6 +58,8 @@ function openFullscreen(pre) {
   svgEl.style.transformOrigin = "center center";
   svgEl.style.overflow = "visible";
 
+  document.body.appendChild(overlay);
+
   const pz = Panzoom(svgEl, {
     maxScale: 5,
     minScale: 0.1,
@@ -152,7 +154,6 @@ function openFullscreen(pre) {
   };
   document.addEventListener("keydown", onKey);
 
-  document.body.appendChild(overlay);
   closeBtn.focus();
 }
 
