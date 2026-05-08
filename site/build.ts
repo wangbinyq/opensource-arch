@@ -309,7 +309,7 @@ function renderHead(title: string, description: string = ""): string {
       ? `\n  <meta name="description" content="${escapeHtml(description)}">`
       : ""
   }
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/opensource-arch/css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
 </head>`;
 }
@@ -354,7 +354,7 @@ function renderArticlePage(a: AnalysisMeta): string {
   return `${renderHead(a.title)}
 <body>
   <div class="page">
-    <a class="back-link" href="/">
+    <a class="back-link" href="/opensource-arch/">
       <span class="back-link__arrow">←</span> 返回目录
     </a>
 
@@ -374,7 +374,7 @@ function renderArticlePage(a: AnalysisMeta): string {
     </article>
 
     <footer class="site-footer">
-      <p><a href="/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
+      <p><a href="/opensource-arch/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
     </footer>
   </div>
 </body>
