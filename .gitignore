@@ -1,0 +1,23 @@
+# Craft Agent workspace files
+config.json
+events.jsonl
+views.json
+.claude-plugin/
+sessions/
+labels/
+skills/
+sources/
+statuses/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
