@@ -102,7 +102,7 @@ function parseMarkdown(md: string): string {
     // Links
     text = text.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener">$1</a>'
     );
     // Handle <br> inside tables
     text = text.replace(/<br\s*\/?>/gi, "<br>");
