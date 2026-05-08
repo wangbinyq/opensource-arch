@@ -420,19 +420,67 @@ body {
   to   { opacity: 1; }
 }
 
-.mermaid-fullscreen__topbar {
+.mermaid-fullscreen__toolbar {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: var(--sp-md);
+  left: var(--sp-md);
+  right: var(--sp-md);
   display: flex;
-  justify-content: flex-end;
-  padding: var(--sp-md);
+  align-items: center;
+  gap: var(--sp-sm);
+  z-index: 1;
+}
+
+.mermaid-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.mermaid-toolbar__btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration) var(--ease-out),
+              background var(--duration) var(--ease-out);
+}
+
+.mermaid-toolbar__btn:hover {
+  color: var(--fg);
+  background: var(--border);
+}
+
+.mermaid-toolbar__btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.mermaid-toolbar__zoom {
+  min-width: 42px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--fg-faint);
+  font-family: var(--font-code);
+  user-select: none;
 }
 
 .mermaid-fullscreen__close {
   width: 36px;
   height: 36px;
+  margin-left: auto;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg-elevated);
