@@ -304,16 +304,23 @@ function extractDescription(md: string): string {
 // ─── HTML templates ──────────────────────────────────
 
 function renderHead(title: string, description: string = ""): string {
+  const metaDesc = description
+    ? `\n  <meta name="description" content="${escapeHtml(description)}">`
+    : "";
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)}</title>${
-    description
-      ? `\n  <meta name="description" content="${escapeHtml(description)}">`
-      : ""
-  }
+  <title>${escapeHtml(title)}</title>${metaDesc}
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-MWEFNTVLHL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-MWEFNTVLHL');
+  </script>
   <link rel="stylesheet" href="${BASE_PATH}/css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
   <script type="module" src="${BASE_PATH}/js/diagram-viewer.js"></script>
