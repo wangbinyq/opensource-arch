@@ -342,7 +342,7 @@ ${items}
     </ul>
 
     <footer class="site-footer">
-      <p><a href="https://github.com/wangb/opensource-arch">GitHub</a></p>
+      <p><a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
     </footer>
   </div>
 </body>
@@ -374,7 +374,7 @@ function renderArticlePage(a: AnalysisMeta): string {
     </article>
 
     <footer class="site-footer">
-      <p><a href="/">返回目录</a> · <a href="https://github.com/wangb/opensource-arch">GitHub</a></p>
+      <p><a href="/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
     </footer>
   </div>
 </body>
