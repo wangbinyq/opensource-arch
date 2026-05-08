@@ -16,10 +16,6 @@ const DOCS_DIR = join(ROOT, "docs");
 const SITE_SRC = join(ROOT, "site/src");
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
-// Import source files so bun --watch tracks them
-import "./src/styles.css";
-import "./src/diagram-viewer.js";
-
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
