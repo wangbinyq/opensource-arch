@@ -260,13 +260,13 @@ type Adaptor interface {
 适配器注册采用**工厂模式**：
 
 ```mermaid
-graph LR
+graph TD
     A[GetAdaptor(apiType)] --> B{Switch APIType}
     B -->|APITypeAnthropic| C[claude.Adaptor]
     B -->|APITypeOpenAI| D[openai.Adaptor]
     B -->|APITypeGemini| E[gemini.Adaptor]
     B -->|APITypeBaidu| F[baidu.Adaptor]
-    B -->|...35+| G[...]
+    B -->|APIType...| G[35+ 其他 Adaptor]
 ```
 
 ### 4.3 渠道分发与亲和性
