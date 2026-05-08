@@ -1,0 +1,85 @@
+graph TB
+    subgraph 客户端层
+        A1[OpenAI SDK]
+        A2[curl / HTTP Client]
+        A3[Web Dashboard]
+    end
+
+    subgraph 网关层
+        B1[Gin HTTP Server]
+        B2[Middleware Pipeline]
+    end
+
+    subgraph 认证与分发
+        C1[TokenAuth]
+        C2[UserAuth / AdminAuth]
+        C3[Distributor<br/>渠道分发]
+        C4[Rate Limiter]
+    end
+
+    subgraph 请求处理核心
+        D1[Controller Layer<br/>relay.go / task.go]
+        D2[Relay Engine<br/>relay/]
+        D3[Task Engine<br/>异步任务]
+    end
+
+    subgraph 适配器层
+        E1[Adaptor 接口]
+        E2[OpenAI Adaptor]
+        E3[Claude Adaptor]
+        E4[Gemini Adaptor]
+        E5[35+ 其他 Adaptor]
+    end
+
+    subgraph 服务层
+        F1[BillingSession<br/>统一计费]
+        F2[Quota Manager]
+        F3[Token Counter]
+        F4[Channel Affinity]
+        F5[Subscription Manager]
+    end
+
+    subgraph 数据层
+        G1[GORM ORM]
+        G2[(MySQL / PostgreSQL / SQLite)]
+        G3[(Redis)]
+        G4[内存 Cache]
+    end
+
+    subgraph AI 提供商
+        H1[OpenAI]
+        H2[Anthropic]
+        H3[Google Gemini]
+        H4[35+ 其他 API]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> B2
+    B2 --> C1
+    B2 --> C2
+    B2 --> C4
+    C1 --> C3
+    C2 --> C3
+    C3 --> D1
+    D1 --> D2
+    D1 --> D3
+    D2 --> E1
+    E1 --> E2
+    E1 --> E3
+    E1 --> E4
+    E1 --> E5
+    E2 --> H1
+    E3 --> H2
+    E4 --> H3
+    E5 --> H4
+    D1 --> F1
+    F1 --> F2
+    F2 --> G1
+    F1 --> F5
+    F3 --> F1
+    F4 --> C3
+    G1 --> G2
+    G1 --> G3
+    G1 --> G4

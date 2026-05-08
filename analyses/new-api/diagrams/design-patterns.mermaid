@@ -1,0 +1,35 @@
+mindmap
+  root((New-API 设计模式))
+    创建型
+      工厂模式
+        relay.GetAdaptor()
+        relay.GetTaskAdaptor()
+      单例模式
+        model.DB / LOG_DB
+        common.RDB
+    结构型
+      适配器模式
+        relay/channel/adapter.go
+        35+ 渠道实现
+      外观模式
+        BillingSession
+        封装计费生命周期
+      中间件模式
+        Gin Middleware Pipeline
+        认证/分发/限流/日志
+    行为型
+      策略模式
+        WalletFunding
+        SubscriptionFunding
+      注册表模式
+        oauth/registry.go
+        OAuth Provider 管理
+      模板方法模式
+        RelayTaskSubmit
+        固定流程+可重写步骤
+      观察者模式
+        SyncChannelCache
+        后台定期同步
+      解释器模式
+        billingexpr/compile.go
+        计费表达式 DSL

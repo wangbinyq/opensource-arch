@@ -1,0 +1,21 @@
+graph TD
+    A[PreConsumeBilling] --> B{计费偏好}
+    B -->|subscription_first| C[尝试订阅计费]
+    B -->|wallet_first| D[尝试钱包计费]
+    B -->|subscription_only| C
+    B -->|wallet_only| D
+    C -->|订阅可用| E[SubscriptionFunding]
+    C -->|订阅不可用/额度不足| D
+    D -->|余额充足| F[WalletFunding]
+    D -->|余额不足| G[返回错误]
+    E --> H[preConsume]
+    F --> H
+    H --> I{信任额度检查}
+    I -->|用户额度 > TrustQuota| J[信任旁路<br/>不预扣额度]
+    I -->|普通用户| K[预扣额度]
+    K --> L{请求成功?}
+    J --> L
+    L -->|成功| M[Settle 结算]
+    L -->|失败| N[Refund 退款]
+    M --> O[更新最终额度/订阅用量]
+    N --> P[退回预扣额度]

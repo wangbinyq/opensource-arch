@@ -1,0 +1,63 @@
+sequenceDiagram
+    participant C as 客户端
+    participant G as Gin Server
+    participant M1 as TokenAuth Middleware
+    participant M2 as Distribute Middleware
+    participant CR as Controller/relay.go
+    participant RE as Relay Engine
+    participant AD as Adaptor
+    participant AI as AI Provider
+    participant DB as Database/Redis
+
+    C->>G: POST /v1/chat/completions Authorization: Bearer sk-xxx
+    G->>M1: 解析 API Key
+    M1->>DB: ValidateUserToken(key)
+    DB-->>M1: Token + User Info
+    M1->>M1: 检查 IP 限制、额度、模型权限
+    M1-->>G: 上下文注入
+
+    G->>M2: 分发渠道
+    M2->>M2: getModelFromRequest()
+    M2->>DB/内存: GetRandomSatisfiedChannel()
+    DB/内存-->>M2: channel
+    M2->>M2: SetupContextForSelectedChannel()
+    M2-->>G: 渠道上下文注入
+
+    G->>CR: relay.Relay(c, OpenAI)
+    CR->>RE: GetAndValidateRequest()
+    RE-->>CR: request
+    CR->>RE: GenRelayInfo()
+    RE-->>CR: relayInfo
+    CR->>RE: EstimateRequestToken()
+    CR->>RE: ModelPriceHelper()
+    RE->>DB: 获取模型定价
+    DB-->>RE: priceData
+
+    CR->>DB: PreConsumeBilling(预扣费)
+    DB-->>CR: 预扣成功
+
+    loop 重试(最多 RetryTimes)
+        CR->>RE: getChannel()
+        RE->>AD: GetAdaptor(channel.Type)
+        AD->>AD: Init()
+        AD->>AD: ConvertOpenAIRequest()
+        AD->>AD: GetRequestURL()
+        AD->>AD: SetupRequestHeader()
+        AD->>AD: DoRequest()
+        AD->>AI: HTTP 请求
+        AI-->>AD: HTTP 响应 + SSE
+        AD->>AD: DoResponse()
+        AD-->>RE: usage
+        RE-->>CR: result
+
+        alt 成功
+            CR->>DB: SettleBilling(结算)
+            CR-->>C: HTTP 200 + SSE 流/JSON
+        else 失败 & 可重试
+            CR->>CR: 禁用渠道
+            CR->>RE: 继续重试
+        else 失败 & 不可重试
+            CR->>DB: Refund(退款)
+            CR-->>C: 错误响应
+        end
+    end
