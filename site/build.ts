@@ -116,9 +116,13 @@ function parseMarkdown(md: string): string {
     if (line.trimStart().startsWith("```")) {
       if (inCodeBlock) {
         closeParagraph();
-        html += `<pre><code${
-          codeLang ? ` class="language-${escapeHtml(codeLang)}"` : ""
-        }>${escapeHtml(codeContent.trimEnd())}</code></pre>\n`;
+        if (codeLang === "mermaid") {
+          html += `<pre class="mermaid">${escapeHtml(codeContent.trimEnd())}</pre>\n`;
+        } else {
+          html += `<pre><code${
+            codeLang ? ` class="language-${escapeHtml(codeLang)}"` : ""
+          }>${escapeHtml(codeContent.trimEnd())}</code></pre>\n`;
+        }
         inCodeBlock = false;
         codeContent = "";
         codeLang = "";
@@ -312,6 +316,10 @@ function renderHead(title: string, description: string = ""): string {
   }
   <link rel="stylesheet" href="${BASE_PATH}/css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
 </head>`;
 }
 
