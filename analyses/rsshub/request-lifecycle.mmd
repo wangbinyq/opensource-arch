@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant U as User/Browser
+    participant H as Hono App
+    participant MW as Middleware Chain
+    participant REG as Registry
+    participant CACHE as Cache Module
+    participant R as Route Handler
+    participant HTTP as HTTP Client (ofetch)
+    participant PROXY as Proxy Manager
+    participant SRC as Target Website
+    participant TEMPL as Template Renderer
+
+    U->>H: GET /hackernews/index
+    H->>MW: 进入中间件管道
+
+    MW->>MW: Logger (记录请求)
+    MW->>MW: Trace (OTEL Span)
+    MW->>MW: Access Control (鉴权)
+    MW->>MW: Debug Info
+
+    MW->>CACHE: 检查缓存 key=hash("/hackernews/index:rss")
+    alt 缓存命中
+        CACHE-->>MW: 返回缓存数据 + Cache-Status: HIT
+        MW->>MW: Header (设置 ETag/CORS)
+        MW->>MW: Template (渲染 RSS XML)
+        MW-->>U: 200 OK (XML 响应)
+    else 缓存未命中
+        CACHE->>CACHE: 设置锁标记 (prevent stampede)
+        MW->>REG: 路由匹配 /hackernews/index
+        REG->>REG: 排序路由、查找 handler
+
+        REG->>R: 执行 route.handler(ctx)
+        R->>HTTP: 发起 HTTP 请求
+        HTTP->>PROXY: 检查代理规则
+        PROXY-->>HTTP: 返回代理配置
+        HTTP->>SRC: GET news.ycombinator.com
+        SRC-->>HTTP: 返回 HTML
+        HTTP-->>R: Response 对象
+
+        R->>R: cheerio.load(html) 解析
+        R->>R: 提取标题、链接、评论数
+        R->>R: 格式化 DataItem[]
+        R-->>REG: 返回 Data 对象
+
+        REG-->>MW: ctx.set('data', data)
+        MW->>MW: Anti-Hotlink (图片替换)
+        MW->>MW: Parameter (过滤/排序)
+        MW->>MW: Header (ETag 计算)
+        MW->>MW: Template (渲染 RSS XML)
+        MW->>CACHE: 写入缓存 + 释放锁
+        MW-->>U: 200 OK (XML 响应)
+    end

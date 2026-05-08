@@ -1,0 +1,35 @@
+flowchart LR
+    subgraph "构建阶段"
+        BR[build:routes - 预编译路由]
+        B[tsdown - 打包]
+    end
+
+    subgraph "发布目标"
+        DOCKER[Docker Hub + GHCR]
+        NPM[npm Package]
+        VERCEL[Vercel Deploy]
+        WORKER[Cloudflare Worker]
+    end
+
+    subgraph "Docker 镜像变体"
+        STD[rsshub:latest - 精简版]
+        CB[rsshub:chromium-bundled - 含 Chromium]
+    end
+
+    BR --> B
+    B --> DOCKER
+    B --> NPM
+    B --> VERCEL
+    B --> WORKER
+
+    DOCKER --> STD
+    DOCKER --> CB
+
+    subgraph "CI 触发条件"
+        PUSH[Push to master]
+        PR[Pull Request]
+        SCHEDULE[Scheduled]
+    end
+
+    PUSH --> BR
+    PR --> BR
