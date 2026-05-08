@@ -20,9 +20,23 @@ mermaid.initialize({
   },
 });
 
-function closeOverlay(overlay) {
+function closeOverlay(overlay, onKey) {
+  document.removeEventListener("keydown", onKey);
   overlay.style.opacity = "0";
   setTimeout(() => overlay.remove(), 150);
+}
+
+function getNaturalSize(svg) {
+  // Use viewBox first, then width/height attributes
+  const vb = svg.getAttribute("viewBox");
+  if (vb) {
+    const parts = vb.split(/[\s,]+/).map(Number);
+    if (parts.length === 4) return { w: parts[2], h: parts[3] };
+  }
+  return {
+    w: parseFloat(svg.getAttribute("width")) || svg.getBBox().width,
+    h: parseFloat(svg.getAttribute("height")) || svg.getBBox().height,
+  };
 }
 
 function openFullscreen(pre) {
@@ -51,38 +65,48 @@ function openFullscreen(pre) {
     svg.outerHTML +
     "</div>";
 
+  // Mount to DOM first — Panzoom requires it
+  document.body.appendChild(overlay);
+
   const diagramEl = overlay.querySelector(".mermaid-fullscreen__diagram");
   const svgEl = diagramEl.querySelector("svg");
   const zoomLabel = overlay.querySelector(".mermaid-toolbar__zoom");
 
-  svgEl.style.transformOrigin = "center center";
-  svgEl.style.overflow = "visible";
+  // Let SVG fill the container naturally
+  svgEl.removeAttribute("width");
+  svgEl.removeAttribute("height");
+  svgEl.removeAttribute("style");
 
-  document.body.appendChild(overlay);
+  // Get natural dimensions before Panzoom takes over
+  const natural = getNaturalSize(svgEl);
 
   const pz = Panzoom(svgEl, {
-    maxScale: 5,
-    minScale: 0.1,
+    maxScale: 8,
+    minScale: 0.05,
     contain: "outside",
     cursor: "grab",
     excludeClass: "mermaid-fullscreen__toolbar",
+    startScale: 1,
   });
 
   function updateZoomLabel() {
     zoomLabel.textContent = Math.round(pz.getScale() * 100) + "%";
   }
 
+  // Wheel zoom
   diagramEl.addEventListener(
     "wheel",
     (e) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      pz.zoomToPoint(pz.getScale() + delta, e);
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const newScale = Math.max(0.05, Math.min(8, pz.getScale() + delta));
+      pz.zoomToPoint(newScale, e);
       updateZoomLabel();
     },
     { passive: false }
   );
 
+  // Cursor feedback
   svgEl.addEventListener("panzoomend", () => {
     svgEl.style.cursor = "grab";
   });
@@ -90,6 +114,7 @@ function openFullscreen(pre) {
     svgEl.style.cursor = "grabbing";
   });
 
+  // Toolbar: zoom in/out
   overlay
     .querySelector('[data-action="zoom-in"]')
     .addEventListener("click", (e) => {
@@ -104,12 +129,16 @@ function openFullscreen(pre) {
       pz.zoomOut();
       updateZoomLabel();
     });
+
+  // Toolbar: fit to screen
   overlay
     .querySelector('[data-action="fit"]')
     .addEventListener("click", (e) => {
       e.stopPropagation();
       fitDiagram();
     });
+
+  // Toolbar: reset to 100%
   overlay
     .querySelector('[data-action="reset"]')
     .addEventListener("click", (e) => {
@@ -119,26 +148,33 @@ function openFullscreen(pre) {
     });
 
   function fitDiagram() {
-    const dRect = diagramEl.getBoundingClientRect();
-    const sRect = svgEl.getBoundingClientRect();
-    const scaleX = (dRect.width - 40) / sRect.width;
-    const scaleY = (dRect.height - 40) / sRect.height;
-    const scale = Math.min(scaleX, scaleY, 1) / pz.getScale();
-    pz.zoomToPoint(pz.getScale() * scale, {
-      clientX: dRect.left + dRect.width / 2,
-      clientY: dRect.top + dRect.height / 2,
-    });
-    pz.pan(0, 0);
+    const pad = 32;
+    const dW = diagramEl.clientWidth - pad * 2;
+    const dH = diagramEl.clientHeight - pad * 2;
+    const scale = Math.min(dW / natural.w, dH / natural.h, 1);
+
+    // Reset pan first, then set scale and center
+    pz.reset({ animate: false });
+    pz.zoom(scale, { animate: false });
+
+    // Center in container
+    const scaledW = natural.w * scale;
+    const scaledH = natural.h * scale;
+    const panX = (dW - scaledW) / 2 + pad;
+    const panY = (dH - scaledH) / 2 + pad;
+    pz.pan(panX, panY, { animate: false });
+
     updateZoomLabel();
   }
 
+  // Close button
   const closeBtn = overlay.querySelector(".mermaid-fullscreen__close");
-  closeBtn.addEventListener("click", () => closeOverlay(overlay));
+  closeBtn.addEventListener("click", () => closeOverlay(overlay, onKey));
 
+  // Keyboard shortcuts
   const onKey = (ev) => {
     if (ev.key === "Escape") {
-      closeOverlay(overlay);
-      document.removeEventListener("keydown", onKey);
+      closeOverlay(overlay, onKey);
     } else if (ev.key === "+" || ev.key === "=") {
       pz.zoomIn();
       updateZoomLabel();

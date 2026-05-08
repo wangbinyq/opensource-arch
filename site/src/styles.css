@@ -408,9 +408,6 @@ body {
   backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-xl) var(--sp-lg);
   cursor: default;
   animation: mermaid-fade-in 0.2s var(--ease-out);
 }
@@ -421,13 +418,11 @@ body {
 }
 
 .mermaid-fullscreen__toolbar {
-  position: absolute;
-  top: var(--sp-md);
-  left: var(--sp-md);
-  right: var(--sp-md);
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  flex-shrink: 0;
   z-index: 1;
 }
 
@@ -506,17 +501,16 @@ body {
 }
 
 .mermaid-fullscreen__diagram {
-  max-width: 1200px;
   width: 100%;
-  max-height: calc(100vh - 80px);
-  overflow: auto;
+  height: 100%;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  text-align: center;
 }
 
 .mermaid-fullscreen__diagram svg {
   max-width: none;
   height: auto;
+  display: block;
 }
 
 @media (max-width: 600px) {
