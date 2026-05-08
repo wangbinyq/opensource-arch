@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSSHub 架构分析</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="/">
+      <span class="back-link__arrow">←</span> 返回目录
+    </a>
+
+    <article>
+      <header class="article-header">
+        <h1 class="article-header__title">RSSHub 架构分析</h1>
+        <p class="article-header__subtitle">1.0.0 · 2026-05-08</p>
+      </header>
+
+      <div class="article-body">
+        <h1>RSSHub 架构分析</h1>
+<blockquote><p>分析版本：v1.0.0（master 分支） ｜ 分析日期：2026-05-08</p></blockquote>
+<h2>1. 项目概览</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub</td>
+<td>https://github.com/DIYgod/RSSHub</td>
+</tr>
+<tr>
+<td>编程语言</td>
+<td>TypeScript / TSX</td>
+</tr>
+<tr>
+<td>许可证</td>
+<td>AGPL-3.0</td>
+</tr>
+<tr>
+<td>核心维护者</td>
+<td>DIYgod</td>
+</tr>
+<tr>
+<td>路由数量</td>
+<td>~1600+ 个命名空间，~500+ 条独立路由</td>
+</tr>
+</tbody>
+</table>
+<p><strong>项目简介</strong></p>
+<p>RSSHub 是一个开源、可扩展的 RSS 内容聚合器，能够为各种网站生成 RSS 订阅源。它支持从社交媒体、新闻媒体、博客、大学通知、政府公告等数千个来源抓取内容，并输出为 RSS、Atom、JSON Feed、RSS3 等多种格式。项目采用插件化的路由架构，任何人都可以轻松为其贡献新的数据源路由。</p>
+<h2>2. 技术栈</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>技术选型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web 框架</td>
+<td>Hono (v4.12)</td>
+</tr>
+<tr>
+<td>构建系统</td>
+<td>tsdown (基于 Rolldown)、tsx</td>
+</tr>
+<tr>
+<td>测试框架</td>
+<td>Vitest v4、Playwright</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions (+ Docker Buildx, Vercel, Cloudflare Workers)</td>
+</tr>
+<tr>
+<td>存储</td>
+<td>LRU Cache (内存) / Redis / HTTP Cache / Cloudflare KV</td>
+</tr>
+<tr>
+<td>代理支持</td>
+<td>HTTP/SOCKS5/PAC 代理 + 多代理故障转移</td>
+</tr>
+<tr>
+<td>影响因子</td>
+<td>@hono/zod-openapi (API 文档)</td>
+</tr>
+<tr>
+<td>代码质量</td>
+<td>oxlint、oxfmt、eslint</td>
+</tr>
+</tbody>
+</table>
+<h2>3. 整体架构</h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph &quot;部署层 Deployment&quot;
+        Docker[Docker / Docker Compose]
+        Vercel[Vercel]
+        Worker[Cloudflare Worker]
+        Container[Cloudflare Container]
+    end
+
+    subgraph &quot;应用框架层 Framework&quot;
+        Hono[Hono HTTP Framework]
+        MW[Middleware Pipeline]
+    end
+
+    subgraph &quot;核心引擎 Core Engine&quot;
+        REG[Registry - 路由注册中心]
+        ROUTER[Hono Router - 动态路由匹配]
+        BUILDER[Build-Routes - 静态构建]
+        CACHE[Cache Module - 多级缓存]
+    end
+
+    subgraph &quot;中间件管道 Middleware Pipeline&quot;
+        LOG[Logger]
+        TRACE[Trace / OpenTelemetry]
+        HB[Honeybadger / Sentry]
+        ACL[Access Control]
+        DEBUG[Debug Info]
+        TEMPLATE[Template - RSS/Atom/JSON]
+        HEADER[Response Headers / ETag]
+        HOTLINK[Anti-Hotlink]
+        PARAM[Parameter - 过滤/排序/AI]
+        CACHE_MW[Cache Middleware]
+    end
+
+    subgraph &quot;路由层 Routes&quot;
+        ROUTES[~500+ Route Handlers]
+        NAMESPACES[~1600+ Namespace 定义]
+        RADAR[Radar Rules]
+    end
+
+    subgraph &quot;数据获取层 Data Fetching&quot;
+        OFETCH[ofetch - HTTP Client]
+        GOT[got 兼容层]
+        PLAYWRIGHT[Playwright 浏览器自动化]
+        RSS_PARSER[RSS Parser]
+        MERCURY[Mercury Parser - 全文提取]
+    end
+
+    subgraph &quot;输出格式 Output Formats&quot;
+        RSS[RSS 2.0 - TSX]
+        ATOM[Atom - TSX]
+        JSON[JSON Feed]
+        RSS3[RSS3 - JSON]
+    end
+
+    subgraph &quot;基础设施层 Infrastructure&quot;
+        REDIS[Redis]
+        LRU_CACHE[LRU Memory Cache]
+        HTTP_CACHE[HTTP Cache]
+        PROXY[Proxy Manager]
+        OTEL[OpenTelemetry]
+    end
+
+    Docker --&gt; Hono
+    Vercel --&gt; Hono
+    Worker --&gt; Hono
+    Container --&gt; Hono
+
+    Hono --&gt; MW
+    MW --&gt; REG
+    REG --&gt; ROUTES
+    ROUTES --&gt; OFETCH
+    ROUTES --&gt; PLAYWRIGHT
+    ROUTES --&gt; RSS_PARSER
+    ROUTES --&gt; MERCURY
+
+    BUILDER --&gt; REG
+    CACHE --&gt; REDIS
+    CACHE --&gt; LRU_CACHE
+    CACHE --&gt; HTTP_CACHE
+
+    ROUTES --&gt; CACHE
+    MW --&gt; CACHE_MW
+    CACHE_MW --&gt; CACHE
+
+    OFETCH --&gt; PROXY
+
+    TEMPLATE --&gt; RSS
+    TEMPLATE --&gt; ATOM
+    TEMPLATE --&gt; JSON
+    TEMPLATE --&gt; RSS3</code></pre>
+<h3>架构分层</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>应用框架层</strong></td>
+<td>基于 Hono 框架构建，通过中间件管道（Middleware Pipeline）串联请求生命周期处理逻辑</td>
+</tr>
+<tr>
+<td><strong>核心引擎层</strong></td>
+<td>包含路由注册中心（Route Registry）、动态路由匹配、构建时路由预编译、多级缓存系统</td>
+</tr>
+<tr>
+<td><strong>路由层</strong></td>
+<td>1600+ 命名空间 + 500+ 路由处理器，每个路由独立文件，通过约定式文件结构组织</td>
+</tr>
+<tr>
+<td><strong>数据获取层</strong></td>
+<td>统一的 HTTP 客户端（ofetch），支持重试、代理、User-Agent 随机化；Playwright 浏览器自动化用于反爬场景</td>
+</tr>
+<tr>
+<td><strong>输出格式层</strong></td>
+<td>支持 RSS 2.0、Atom、JSON Feed、RSS3 四种输出格式，通过 TSX 模板渲染</td>
+</tr>
+</tbody>
+</table>
+<h3>模块职责</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>职责</th>
+<th>关键文件/目录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>应用配置</strong></td>
+<td>组装中间件管道、路由挂载、错误处理</td>
+<td><code>lib/app-bootstrap.tsx</code>, <code>lib/app.ts</code></td>
+</tr>
+<tr>
+<td><strong>路由注册中心</strong></td>
+<td>动态/静态路由注册、命名空间管理、路由排序</td>
+<td><code>lib/registry.ts</code>, <code>lib/router.js</code></td>
+</tr>
+<tr>
+<td><strong>路由实现</strong></td>
+<td>具体数据源的内容抓取与 RSS 数据生成</td>
+<td><code>lib/routes/*/</code>，每个目录一个数据源命名空间</td>
+</tr>
+<tr>
+<td><strong>中间件</strong></td>
+<td>请求/响应处理管道（缓存、鉴权、过滤、模板等）</td>
+<td><code>lib/middleware/*.ts</code></td>
+</tr>
+<tr>
+<td><strong>配置管理</strong></td>
+<td>环境变量读取、远程配置拉取、类型化配置对象</td>
+<td><code>lib/config.ts</code></td>
+</tr>
+<tr>
+<td><strong>缓存系统</strong></td>
+<td>多后端缓存抽象（Memory/Redis/HTTP/Worker KV）</td>
+<td><code>lib/utils/cache/*.ts</code></td>
+</tr>
+<tr>
+<td><strong>HTTP 客户端</strong></td>
+<td>带重试/代理/UA 的 fetch 包装器</td>
+<td><code>lib/utils/ofetch.ts</code>, <code>lib/utils/got.ts</code></td>
+</tr>
+<tr>
+<td><strong>代理管理</strong></td>
+<td>PAC/HTTP/SOCKS5 代理支持 + 多代理故障转移</td>
+<td><code>lib/utils/proxy/index.ts</code></td>
+</tr>
+<tr>
+<td><strong>API 模块</strong></td>
+<td>OpenAPI 文档、命名空间/路由/雷达规则查询</td>
+<td><code>lib/api/*.ts</code></td>
+</tr>
+<tr>
+<td><strong>错误处理</strong></td>
+<td>统一错误响应、Sentry/Honeybadger 集成</td>
+<td><code>lib/errors/index.tsx</code></td>
+</tr>
+<tr>
+<td><strong>构建工具</strong></td>
+<td>路由预编译、Radar 规则提取、生成 types</td>
+<td><code>scripts/workflow/build-routes.ts</code></td>
+</tr>
+</tbody>
+</table>
+<h2>4. 核心模块详解</h2>
+<h3>4.1 路由系统（Route System）</h3>
+<p>RSSHub 的路由系统是其最核心的架构设计，采用<strong>约定大于配置</strong>的文件组织方式：</p>
+<pre><code>lib/routes/
+├── hackernews/       # 一个命名空间 = 一个目录
+│   ├── namespace.ts  # 命名空间元数据（名称、语言、分类等）
+│   └── index.ts      # 路由处理器导出 route 对象
+├── github/
+│   ├── namespace.ts
+│   ├── issue.ts      # 可多个文件，一个文件一个路由
+│   ├── pull.ts
+│   └── ...</code></pre>
+<p>每个路由文件导出一个 <code>Route</code> 类型对象，包含 <code>path</code>（Hono 路由路径语法）、<code>handler</code>（请求处理器）、<code>name</code>、<code>categories</code>、<code>maintainers</code>、<code>radar</code>（浏览器扩展规则）、<code>features</code>（特性标记）等信息。这种设计使得：</p>
+<ol>
+<li><strong>高内聚</strong> — 每个路由的自描述信息（路径、参数、示例、维护者）与处理逻辑在同一文件中</li>
+<li><strong>低耦合</strong> — 路由之间完全独立，无需共享状态</li>
+<li><strong>低门槛贡献</strong> — 新手只需了解一个文件的导出格式即可贡献新数据源</li>
+</ol>
+<p>路由注册有两种模式：</p>
+<ul>
+<li><strong>生产模式</strong> — 通过 <code>build-routes.ts</code> 预编译所有路由到 <code>assets/build/routes.js</code>，运行时直接导入，零启动开销</li>
+<li><strong>开发模式</strong> — 使用 <code>directory-import</code> 动态导入（热重载友好）</li>
+</ul>
+<h3>4.2 中间件管道（Middleware Pipeline）</h3>
+<p>RSSHub 的中间件管道按以下顺序执行，每个中间件处理请求的一个横切关注点：</p>
+<pre><code>请求到达
+  ↓
+trimTrailingSlash / compress (Hono 内置)
+  ↓
+jsxRenderer (设置 JSX 渲染器，用于 RSS/Atom 模板)
+  ↓
+Logger (请求日志)
+  ↓
+Trace (OpenTelemetry 分布式追踪)
+  ↓
+Honeybadger / Sentry (错误跟踪，仅 Node.js)
+  ↓
+Access Control (基于 accessKey 的鉴权)
+  ↓
+Debug Info (调试信息收集)
+  ↓
+Template (路由处理器执行后的响应渲染)
+  ↓
+Header (响应头：CORS/ETag/Cache-Control)
+  ↓
+Anti-Hotlink (图片/多媒体链接替换)
+  ↓
+Parameter (过滤/排序/全文提取/AI 摘要等)
+  ↓
+Cache (缓存检查/写入)
+  ↓
+Route Handler (实际的路由处理逻辑)
+  ↓
+响应返回</code></pre>
+<p>其中 <code>Cache</code> 中间件在路由处理前后都有逻辑：在处理前检查缓存命中（HIT 直接返回），未命中则设置锁防止缓存风暴，在路由处理完成后写入缓存。<code>Parameter</code> 中间件在路由处理后处理数据，支持 <code>filter</code>、<code>filterout</code>、<code>limit</code>、<code>sorted</code>、<code>fulltext</code>（全文提取）、<code>chatgpt</code>（AI 摘要）、<code>opencc</code>（繁简转换）等丰富的查询参数。</p>
+<h3>4.3 多级缓存系统</h3>
+<pre><code class="language-mermaid">flowchart LR
+    subgraph &quot;Cache Abstraction&quot;
+        IC[interface CacheModule]
+    end
+
+    subgraph &quot;Cache Backends&quot;
+        MEM[Memory LRU Cache]
+        REDIS[Redis]
+        HTTP[HTTP Cache - Remote]
+        KV[Cloudflare KV]
+    end
+
+    subgraph &quot;Cache Keys&quot;
+        RC[Route Cache - xxhash64]
+        CC[Content Cache - per item]
+        LC[Lock Cache - request control]
+    end
+
+    subgraph &quot;Usage&quot;
+        MW[Cache Middleware]
+        TG[tryGet utility]
+        GC[globalCache]
+    end
+
+    MW --&gt; RC
+    TG --&gt; CC
+    MW --&gt; LC
+
+    RC --&gt; IC
+    CC --&gt; IC
+    LC --&gt; IC
+
+    IC --&gt; MEM
+    IC --&gt; REDIS
+    IC --&gt; HTTP
+    IC --&gt; KV</code></pre>
+<p>缓存系统通过 <code>CacheModule</code> 接口抽象统一了四种后端实现：</p>
+<ul>
+<li><strong>Memory</strong> — 基于 <code>lru-cache</code>，内存级缓存，适合单机部署</li>
+<li><strong>Redis</strong> — 支持分布式缓存，适合多实例集群</li>
+<li><strong>HTTP</strong> — 远程 HTTP 缓存服务</li>
+<li><strong>KV</strong> — Cloudflare Workers KV（Worker 部署场景）</li>
+</ul>
+<p>缓存中间件实现了一个关键机制：<strong>缓存锁（request-in-progress lock）</strong>。当第一个请求未命中缓存时，设置一个锁标记；在此期间相同路径的其他请求会等待（最多重试 10 次/60 秒），避免缓存风暴（Cache Stampede 问题）。使用 <code>xxhash-wasm</code>（XXH64）对缓存键做哈希，缩短键长度。</p>
+<h3>4.4 数据获取层</h3>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph &quot;HTTP Clients&quot;
+        OFETCH[ofetch - 统一 HTTP 客户端]
+        GOTCOMPAT[got 兼容适配层]
+    end
+
+    subgraph &quot;Browser Automation&quot;
+        PW[Playwright]
+        CHROM[Chromium / Chrome]
+    end
+
+    subgraph &quot;Content Parsing&quot;
+        CHEERIO[cheerio - HTML 解析]
+        JSDOMP[jsdom]
+        MERCP[Mecury Parser - 全文提取]
+        RSSP[rss-parser - RSS 解析]
+    end
+
+    subgraph &quot;Proxy Layer&quot;
+        HTTP_PROXY[HTTP Proxy]
+        SOCKS_PROXY[SOCKS5 Proxy]
+        PAC_PROXY[PAC Proxy]
+        MULTI_PROXY[Multi-Proxy Failover]
+    end
+
+    OFETCH --&gt; HTTP_PROXY
+    OFETCH --&gt; SOCKS_PROXY
+    OFETCH --&gt; PAC_PROXY
+    OFETCH --&gt; MULTI_PROXY
+
+    OFETCH --&gt; CHEERIO
+    OFETCH --&gt; MERCP
+
+    PW --&gt; CHROM
+    PW --&gt; CHEERIO
+
+    RSSP --&gt; OFETCH
+
+    GOTCOMPAT --&gt; OFETCH</code></pre>
+<p>数据获取层使用 <code>ofetch</code>（基于 <code>undici</code>）作为统一的 HTTP 客户端，并提供了一个 <code>got</code> 兼容适配层（<code>utils/got.ts</code>）以保持对旧路由的向后兼容。关键特性：</p>
+<ul>
+<li><strong>自动重试</strong> — 对 4xx/5xx 状态码请求自动重试（可配置次数和延迟）</li>
+<li><strong>代理支持</strong> — 支持 HTTP/SOCKS5/PAC 代理，以及多代理故障转移策略</li>
+<li><strong>User-Agent 随机化</strong> — <code>header-generator</code> 库生成真实浏览器 UA</li>
+<li><strong>浏览器自动化</strong> — Playwright 驱动 Chromium，用于需要 JS 渲染或反爬的页面</li>
+</ul>
+<h3>4.5 部署架构</h3>
+<p>RSSHub 支持四种部署模式，这是其架构的一大亮点：</p>
+<table>
+<thead>
+<tr>
+<th>部署模式</th>
+<th>入口文件</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Vercel Serverless</strong></td>
+<td><code>lib/server.ts</code></td>
+<td>无服务器模式，按需计费</td>
+</tr>
+<tr>
+<td><strong>Cloudflare Worker</strong></td>
+<td><code>lib/worker.ts</code></td>
+<td>轻量级，排除重中间件（Sentry/Playwright 等）</td>
+</tr>
+<tr>
+<td><strong>Cloudflare Container</strong></td>
+<td><code>lib/container.ts</code></td>
+<td>基于 Durable Object 的容器化部署</td>
+</tr>
+</tbody>
+</table>
+<p>每种部署模式共享相同的路由注册和核心逻辑，但通过构建配置（<code>tsdown-worker.config.ts</code>、<code>tsdown-vercel.config.ts</code> 等）进行差异化打包，平台特定代码通过 <code>isWorker</code> 等环境检测进行条件编译。</p>
+<h2>5. 关键设计决策</h2>
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>选择</th>
+<th>替代方案</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>构建工具</strong></td>
+<td>tsdown (Rolldown)</td>
+<td>tsc / esbuild / Rollup</td>
+<td>tsdown 基于 Rolldown（Rust 版 Rollup），构建速度快，天然支持 Worker/Vercel/Container 多目标输出</td>
+</tr>
+<tr>
+<td><strong>路由组织</strong></td>
+<td>文件系统约定 + 构建时预编译</td>
+<td>运行时动态注册</td>
+<td>开发时约定优于配置、易于贡献；生产时预编译为 JS 对象避免启动时文件扫描开销</td>
+</tr>
+<tr>
+<td><strong>缓存策略</strong></td>
+<td>多后端抽象 + 缓存锁</td>
+<td>单一缓存</td>
+<td>支持从单机 LRU 到分布式 Redis 的可扩展部署；缓存锁防止缓存风暴</td>
+</tr>
+<tr>
+<td><strong>输出格式</strong></td>
+<td>Hono JSX 模板渲染</td>
+<td>模板引擎 (EJS/Handlebars)</td>
+<td>利用 JSX 直接生成 XML，类型安全，无需额外模板引擎，与框架深度集成</td>
+</tr>
+<tr>
+<td><strong>数据获取</strong></td>
+<td>ofetch + got 兼容层</td>
+<td>统一 got</td>
+<td>ofetch 基于标准 fetch API，跨运行时兼容；got 兼容层保持旧路由可运行</td>
+</tr>
+<tr>
+<td><strong>代理架构</strong></td>
+<td>统一代理管理器 + 故障转移</td>
+<td>单代理配置</td>
+<td>支持多代理列表、健康检查、自动故障转移，提高可用性</td>
+</tr>
+<tr>
+<td><strong>部署平台</strong></td>
+<td>Docker + Vercel + Workers + Containers</td>
+<td>单一平台</td>
+<td>满足不同用户需求：自托管高级用户、Serverless 轻量用户、边缘计算用户</td>
+</tr>
+</tbody>
+</table>
+<h2>6. 数据流 / 请求流</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant U as User/Browser
+    participant H as Hono App
+    participant MW as Middleware Chain
+    participant REG as Registry
+    participant CACHE as Cache Module
+    participant R as Route Handler
+    participant HTTP as HTTP Client (ofetch)
+    participant PROXY as Proxy Manager
+    participant SRC as Target Website
+    participant TEMPL as Template Renderer
+
+    U-&gt;&gt;H: GET /hackernews/index
+    H-&gt;&gt;MW: 进入中间件管道
+
+    MW-&gt;&gt;MW: Logger (记录请求)
+    MW-&gt;&gt;MW: Trace (OTEL Span)
+    MW-&gt;&gt;MW: Access Control (鉴权)
+    MW-&gt;&gt;MW: Debug Info
+
+    MW-&gt;&gt;CACHE: 检查缓存 key=hash(&quot;/hackernews/index:rss&quot;)
+    alt 缓存命中
+        CACHE--&gt;&gt;MW: 返回缓存数据 + Cache-Status: HIT
+        MW-&gt;&gt;MW: Header (设置 ETag/CORS)
+        MW-&gt;&gt;MW: Template (渲染 RSS XML)
+        MW--&gt;&gt;U: 200 OK (XML 响应)
+    else 缓存未命中
+        CACHE-&gt;&gt;CACHE: 设置锁标记 (prevent stampede)
+        MW-&gt;&gt;REG: 路由匹配 /hackernews/index
+        REG-&gt;&gt;REG: 排序路由、查找 handler
+
+        REG-&gt;&gt;R: 执行 route.handler(ctx)
+        R-&gt;&gt;HTTP: 发起 HTTP 请求
+        HTTP-&gt;&gt;PROXY: 检查代理规则
+        PROXY--&gt;&gt;HTTP: 返回代理配置
+        HTTP-&gt;&gt;SRC: GET news.ycombinator.com
+        SRC--&gt;&gt;HTTP: 返回 HTML
+        HTTP--&gt;&gt;R: Response 对象
+
+        R-&gt;&gt;R: cheerio.load(html) 解析
+        R-&gt;&gt;R: 提取标题、链接、评论数
+        R-&gt;&gt;R: 格式化 DataItem[]
+        R--&gt;&gt;REG: 返回 Data 对象
+
+        REG--&gt;&gt;MW: ctx.set('data', data)
+        MW-&gt;&gt;MW: Anti-Hotlink (图片替换)
+        MW-&gt;&gt;MW: Parameter (过滤/排序)
+        MW-&gt;&gt;MW: Header (ETag 计算)
+        MW-&gt;&gt;MW: Template (渲染 RSS XML)
+        MW-&gt;&gt;CACHE: 写入缓存 + 释放锁
+        MW--&gt;&gt;U: 200 OK (XML 响应)
+    end</code></pre>
+<h3>路由处理器内部数据流</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Handler as route.handler
+    participant HTTP as ofetch/got
+    participant PROXY as Proxy
+    participant SITE as Target Site
+    participant CHEERIO as cheerio
+    participant CACHE as tryGet Cache
+
+    Handler-&gt;&gt;HTTP: got(currentUrl)
+    HTTP-&gt;&gt;PROXY: check proxy strategy
+    PROXY--&gt;&gt;HTTP: proxy config
+    HTTP-&gt;&gt;SITE: GET request
+    SITE--&gt;&gt;HTTP: HTML response
+    HTTP--&gt;&gt;Handler: response.data
+
+    Handler-&gt;&gt;CHEERIO: load(html)
+    CHEERIO--&gt;&gt;Handler: $ instance
+
+    Handler-&gt;&gt;Handler: $('.athing').map() 提取 items
+    Note over Handler: slice, map, 构建 list
+
+    loop 每个 item
+        Handler-&gt;&gt;CACHE: cache.tryGet(item.guid)
+        alt 未命中
+            Handler-&gt;&gt;HTTP: 请求详情页
+            HTTP--&gt;&gt;Handler: 详情 HTML
+            Handler-&gt;&gt;CHEERIO: 解析评论/内容
+            CACHE--&gt;&gt;Handler: 写入缓存
+        else 命中
+            CACHE--&gt;&gt;Handler: 返回缓存
+        end
+    end
+
+    Handler--&gt;&gt;Handler: 组装 Data { title, link, item[] }</code></pre>
+<h2>7. 设计模式</h2>
+<table>
+<thead>
+<tr>
+<th>模式名称</th>
+<th>使用位置</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>策略（Strategy）</strong></td>
+<td><code>lib/utils/cache/index.ts</code></td>
+<td>根据配置动态选择缓存策略（Memory / Redis / HTTP / KV），运行时透明切换</td>
+</tr>
+<tr>
+<td><strong>工厂（Factory）</strong></td>
+<td><code>lib/utils/got.ts</code> — <code>getFakeGot()</code></td>
+<td>创建预配置的 HTTP 客户端实例，支持 <code>.extend()</code> 派生新实例</td>
+</tr>
+<tr>
+<td><strong>适配器（Adapter）</strong></td>
+<td><code>lib/utils/got.ts</code> → <code>lib/utils/ofetch.ts</code></td>
+<td>将 <code>ofetch</code> 适配为 <code>got</code> 接口，保持与旧路由的向后兼容</td>
+</tr>
+<tr>
+<td><strong>模板方法（Template Method）</strong></td>
+<td><code>lib/middleware/template.tsx</code></td>
+<td>定义输出格式的骨架，子类（RSS/Atom/JSON/RSS3）实现具体渲染逻辑</td>
+</tr>
+<tr>
+<td><strong>约定优于配置（Convention Over Configuration）</strong></td>
+<td><code>lib/routes/*/</code> 文件结构</td>
+<td>通过目录和文件命名约定自动发现和注册路由，零配置</td>
+</tr>
+<tr>
+<td><strong>惰性加载（Lazy Loading）</strong></td>
+<td><code>lib/registry.ts</code> — <code>routeData.module</code></td>
+<td>生产环境使用动态 <code>import()</code> 惰性加载路由处理函数，减少启动时间</td>
+</tr>
+<tr>
+<td><strong>缓存锁（Cache Lock / Memoizer）</strong></td>
+<td><code>lib/middleware/cache.ts</code></td>
+<td>防止缓存风暴（Stampede），未命中时第一个请求设置锁，后续请求等待</td>
+</tr>
+<tr>
+<td><strong>包装器（Wrapper）</strong></td>
+<td><code>lib/utils/cache/index.ts</code> — <code>tryGet()</code></td>
+<td>装饰函数调用，添加缓存逻辑：命中返回、未命中调用函数并写入缓存</td>
+</tr>
+<tr>
+<td><strong>模块化（Module Pattern）</strong></td>
+<td><code>lib/routes/*/index.ts</code></td>
+<td>每个路由作为独立模块导出 <code>Route</code> 类型对象，自包含元数据和处理器</td>
+</tr>
+<tr>
+<td><strong>多代理故障转移（Multi-Proxy Failover）</strong></td>
+<td><code>lib/utils/proxy/index.ts</code></td>
+<td>管理多个代理，健康检查，自动切换到可用代理</td>
+</tr>
+<tr>
+<td><strong>条件编译（Conditional Compilation）</strong></td>
+<td><code>lib/app.worker.tsx</code> vs <code>lib/app-bootstrap.tsx</code></td>
+<td>通过不同构建配置和入口文件，为不同部署平台生成优化版本</td>
+</tr>
+</tbody>
+</table>
+<h2>8. 工程实践</h2>
+<h3>测试策略</h3>
+<pre><code>测试金字塔：
+┌──────────────────────────────────────┐
+│           E2E / Full Route Test       │  ← vitest:fullroutes（手动触发）
+│         ┌────────────────────┐        │
+│         │    Playwright 测试   │        │  ← vitest playwright（浏览器自动化）
+│         ├────────────────────┤        │
+│         │    单元 + 集成测试   │        │  ← vitest（~110+ 测试文件）
+│         │  middleware / utils │        │
+│         ├────────────────────┤        │
+│         │   App Bootstrap 测试 │        │  ← entrypoints.test.ts
+│         └────────────────────┘        │
+└──────────────────────────────────────┘</code></pre>
+<p><strong>测试类别：</strong></p>
+<ul>
+<li><strong>单元测试</strong> — 覆盖中间件（cache、header、parameter、debug、filter-engine）、工具函数（parse-date、common-utils、md5、ofetch、got、proxy）</li>
+<li><strong>集成测试</strong> — <code>app.test.ts</code> 测试应用启动和请求重写、<code>registry.test.ts</code> 测试路由注册</li>
+<li><strong>Playwright 测试</strong> — 测试浏览器自动化路由</li>
+<li><strong>全路由测试</strong> — 可选运行所有路由的冒烟测试（<code>vitest:fullroutes</code>）</li>
+<li><strong>覆盖率</strong> — 收集除 <code>lib/routes/</code> 外的核心代码覆盖率，上传至 Codecov</li>
+</ul>
+<p><strong>CI 矩阵：</strong></p>
+<ul>
+<li>3 个 Node.js 版本（latest, lts/*, lts/-1）</li>
+<li>3 种 Chromium 来源（bundled Playwright / Ubuntu APT / Google Chrome）</li>
+<li>每次 push 和 PR 都运行完整流水线</li>
+</ul>
+<h3>发布流程</h3>
+<pre><code class="language-mermaid">flowchart LR
+    subgraph &quot;构建阶段&quot;
+        BR[build:routes - 预编译路由]
+        B[tsdown - 打包]
+    end
+
+    subgraph &quot;发布目标&quot;
+        DOCKER[Docker Hub + GHCR]
+        NPM[npm Package]
+        VERCEL[Vercel Deploy]
+        WORKER[Cloudflare Worker]
+    end
+
+    subgraph &quot;Docker 镜像变体&quot;
+        STD[rsshub:latest - 精简版]
+        CB[rsshub:chromium-bundled - 含 Chromium]
+    end
+
+    BR --&gt; B
+    B --&gt; DOCKER
+    B --&gt; NPM
+    B --&gt; VERCEL
+    B --&gt; WORKER
+
+    DOCKER --&gt; STD
+    DOCKER --&gt; CB
+
+    subgraph &quot;CI 触发条件&quot;
+        PUSH[Push to master]
+        PR[Pull Request]
+        SCHEDULE[Scheduled]
+    end
+
+    PUSH --&gt; BR
+    PR --&gt; BR</code></pre>
+<p>发布流程通过 GitHub Actions 自动化：</p>
+<ol>
+<li><strong>Docker 构建</strong> — 多架构（amd64 + arm64）并行构建，使用 ZRAM 减少内存压力，支持精简版和 Chromium 捆绑版两种镜像</li>
+<li><strong>npm 包</strong> — <code>build:lib</code> 打包 TypeScript 类型声明和 JS 输出，发布到 npm</li>
+<li><strong>Vercel</strong> — <code>vercel-build</code> 使用 tsdown-vercel 配置构建</li>
+<li><strong>Worker</strong> — <code>worker-build</code> 使用 tsdown-worker 配置构建，自动部署到 Cloudflare</li>
+</ol>
+<h3>代码质量</h3>
+<ul>
+<li><strong>oxlint</strong> — 快速 Rust 驱动的 linter</li>
+<li><strong>oxfmt</strong> — 代码格式化（替代 Prettier）</li>
+<li><strong>eslint</strong> — 补充规则检查（import 排序、unicorn 规则）</li>
+<li><strong>lint-staged</strong> — 提交前自动格式化</li>
+<li><strong>Husky</strong> — Git Hooks 管理</li>
+<li><strong>oxlint-plugin-eslint + oxlint-tsgolint</strong> — 增强规则集</li>
+</ul>
+<h2>9. 总结与评价</h2>
+<h3>亮点</h3>
+<ol>
+<li><strong>极致的可扩展性</strong> — 路由即插即用，社区贡献者只需创建一个文件即可添加新数据源。1600+ 路由证明了这种架构的成功</li>
+<li><strong>多平台部署能力</strong> — 一套代码同时支持 Docker、Vercel、Cloudflare Workers、Cloudflare Containers，通过条件编译和构建时差异化实现，设计优雅</li>
+<li><strong>完善的缓存系统</strong> — 缓存抽象层支持 4 种后端，缓存锁机制防止缓存风暴，tryGet 模式简化了路由中的缓存使用</li>
+<li><strong>丰富的输出格式</strong> — 利用 Hono JSX 输出 RSS 2.0、Atom、JSON Feed、RSS3 四种格式，无需模板引擎</li>
+<li><strong>强大的请求处理管道</strong> — 中间件管道提供了过滤、排序、全文提取、AI 摘要、繁简转换、反盗链等丰富功能，用户通过 URL 查询参数即可控制</li>
+<li><strong>高质量工程实践</strong> — 完整的 CI/CD 矩阵、自动化 Docker 多架构构建、lint-staged 格式化、覆盖率追踪</li>
+<li><strong>代理管理</strong> — 支持 PAC/HTTP/SOCKS5 代理以及多代理故障转移，适应复杂网络环境</li>
+</ol>
+<h3>可改进之处</h3>
+<ol>
+<li><strong>路由测试覆盖率</strong> — 500+ 路由缺少自动化测试，依赖手动或全路由冒烟测试。可引入快照测试或基于录制回放的测试</li>
+<li><strong>动态路由注册的冷启动</strong> — 生产环境使用预编译解决了此问题，但在开发模式下 1600+ 路由的 directory-import 可能较慢</li>
+<li><strong>Worker 功能受限</strong> — Cloudflare Worker 部署缺少 Sentry、Honeybadger、Playwright、API 路由等功能，与 Docker 部署能力差距大</li>
+<li><strong>错误处理的一致性</strong> — 部分路由直接抛出异常，部分返回空数据，缺乏统一的错误类型定义</li>
+<li><strong>依赖管理</strong> — 大量 route-specific 的凭据（cookie/token）在 config.ts 中集中声明，管理复杂度随路由数量线性增长</li>
+<li><strong>TypeScript 严格性</strong> — 部分代码使用了 <code>@ts-expect-error</code> 和 <code>any</code> 类型，可进一步严格化</li>
+</ol>
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.rsshub.app">RSSHub 官方文档</a></li>
+<li><a href="https://github.com/DIYgod/RSSHub">RSSHub GitHub 仓库</a></li>
+<li><a href="https://hono.dev">Hono 框架</a></li>
+<li><a href="https://github.com/unjs/ofetch">ofetch</a></li>
+<li><a href="https://github.com/DIYgod/RSSHub-Radar">RSSHub-Radar 浏览器扩展</a></li>
+<li><a href="https://github.com/RSSNext/Follow">Follow (RSSNext)</a></li>
+</ul>
+
+      </div>
+    </article>
+
+    <footer class="site-footer">
+      <p><a href="/">返回目录</a> · <a href="https://github.com/wangb/opensource-arch">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>

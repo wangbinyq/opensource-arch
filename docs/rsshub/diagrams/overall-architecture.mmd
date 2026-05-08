@@ -1,0 +1,90 @@
+graph TD
+    subgraph "部署层 Deployment"
+        Docker[Docker / Docker Compose]
+        Vercel[Vercel]
+        Worker[Cloudflare Worker]
+        Container[Cloudflare Container]
+    end
+
+    subgraph "应用框架层 Framework"
+        Hono[Hono HTTP Framework]
+        MW[Middleware Pipeline]
+    end
+
+    subgraph "核心引擎 Core Engine"
+        REG[Registry - 路由注册中心]
+        ROUTER[Hono Router - 动态路由匹配]
+        BUILDER[Build-Routes - 静态构建]
+        CACHE[Cache Module - 多级缓存]
+    end
+
+    subgraph "中间件管道 Middleware Pipeline"
+        LOG[Logger]
+        TRACE[Trace / OpenTelemetry]
+        HB[Honeybadger / Sentry]
+        ACL[Access Control]
+        DEBUG[Debug Info]
+        TEMPLATE[Template - RSS/Atom/JSON]
+        HEADER[Response Headers / ETag]
+        HOTLINK[Anti-Hotlink]
+        PARAM[Parameter - 过滤/排序/AI]
+        CACHE_MW[Cache Middleware]
+    end
+
+    subgraph "路由层 Routes"
+        ROUTES[~500+ Route Handlers]
+        NAMESPACES[~1600+ Namespace 定义]
+        RADAR[Radar Rules]
+    end
+
+    subgraph "数据获取层 Data Fetching"
+        OFETCH[ofetch - HTTP Client]
+        GOT[got 兼容层]
+        PLAYWRIGHT[Playwright 浏览器自动化]
+        RSS_PARSER[RSS Parser]
+        MERCURY[Mercury Parser - 全文提取]
+    end
+
+    subgraph "输出格式 Output Formats"
+        RSS[RSS 2.0 - TSX]
+        ATOM[Atom - TSX]
+        JSON[JSON Feed]
+        RSS3[RSS3 - JSON]
+    end
+
+    subgraph "基础设施层 Infrastructure"
+        REDIS[Redis]
+        LRU_CACHE[LRU Memory Cache]
+        HTTP_CACHE[HTTP Cache]
+        PROXY[Proxy Manager]
+        OTEL[OpenTelemetry]
+    end
+
+    Docker --> Hono
+    Vercel --> Hono
+    Worker --> Hono
+    Container --> Hono
+
+    Hono --> MW
+    MW --> REG
+    REG --> ROUTES
+    ROUTES --> OFETCH
+    ROUTES --> PLAYWRIGHT
+    ROUTES --> RSS_PARSER
+    ROUTES --> MERCURY
+
+    BUILDER --> REG
+    CACHE --> REDIS
+    CACHE --> LRU_CACHE
+    CACHE --> HTTP_CACHE
+
+    ROUTES --> CACHE
+    MW --> CACHE_MW
+    CACHE_MW --> CACHE
+
+    OFETCH --> PROXY
+
+    TEMPLATE --> RSS
+    TEMPLATE --> ATOM
+    TEMPLATE --> JSON
+    TEMPLATE --> RSS3

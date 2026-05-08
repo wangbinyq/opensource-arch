@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New-API 架构分析</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="/">
+      <span class="back-link__arrow">←</span> 返回目录
+    </a>
+
+    <article>
+      <header class="article-header">
+        <h1 class="article-header__title">New-API 架构分析</h1>
+        <p class="article-header__subtitle">0.10 · 2026-05-08</p>
+      </header>
+
+      <div class="article-body">
+        <h1>New-API 架构分析</h1>
+<blockquote><p>分析版本：v0.10+ ｜ 分析日期：2026-05-08</p></blockquote>
+<h2>1. 项目概览</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>编程语言</td>
+<td>Go 1.25.1</td>
+</tr>
+<tr>
+<td>许可证</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>衍生自</td>
+<td>songquanpeng/one-api</td>
+</tr>
+<tr>
+<td>前端框架</td>
+<td>React 18 + Radix UI + TanStack Router</td>
+</tr>
+<tr>
+<td>后端框架</td>
+<td>Gin + GORM</td>
+</tr>
+</tbody>
+</table>
+<p><strong>项目简介</strong></p>
+<p>New-API 是一个开源的 <strong>AI API 网关/代理</strong>，支持 35+ 大模型 API 的统一接入、负载均衡、计费管理、用户管理和额度控制。它为多种 AI 模型提供商（OpenAI、Anthropic、Gemini、百度、阿里、DeepSeek 等）提供统一的 API 入口，支持 OpenAI 兼容格式、Claude 格式、Gemini 格式的协议转换，并提供 Midjourney、Suno、视频生成等异步任务管理功能。</p>
+<h2>2. 技术栈</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>技术选型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web 框架</td>
+<td>Gin v1.9.1</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>GORM v1.25.2</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>MySQL / PostgreSQL / SQLite</td>
+</tr>
+<tr>
+<td>缓存</td>
+<td>内存缓存 + Redis（可选）</td>
+</tr>
+<tr>
+<td>前端</td>
+<td>React 18 + Radix UI + TanStack Router + Tailwind CSS</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions（Docker 多架构构建、Release、PR Check）</td>
+</tr>
+<tr>
+<td>测试框架</td>
+<td>Go testing + testify</td>
+</tr>
+<tr>
+<td>协议</td>
+<td>HTTP/1.1 + WebSocket（Realtime API） + SSE（流式响应）</td>
+</tr>
+<tr>
+<td>配置文件</td>
+<td>.env + YAML + 数据库 Option 表</td>
+</tr>
+<tr>
+<td>认证</td>
+<td>Session（Dashboard）+ API Token（Bearer）+ OAuth（GitHub、Discord等）</td>
+</tr>
+</tbody>
+</table>
+<h2>3. 整体架构</h2>
+<pre><code class="language-mermaid">graph TB
+    subgraph 客户端层
+        A1[OpenAI SDK]
+        A2[curl / HTTP Client]
+        A3[Web Dashboard]
+    end
+
+    subgraph 网关层
+        B1[Gin HTTP Server]
+        B2[Middleware Pipeline]
+    end
+
+    subgraph 认证与分发
+        C1[TokenAuth]
+        C2[UserAuth / AdminAuth]
+        C3[Distributor&lt;br/&gt;渠道分发]
+        C4[Rate Limiter]
+    end
+
+    subgraph 请求处理核心
+        D1[Controller Layer&lt;br/&gt;relay.go / task.go]
+        D2[Relay Engine&lt;br/&gt;relay/]
+        D3[Task Engine&lt;br/&gt;异步任务]
+    end
+
+    subgraph 适配器层
+        E1[Adaptor 接口]
+        E2[OpenAI Adaptor]
+        E3[Claude Adaptor]
+        E4[Gemini Adaptor]
+        E5[35+ 其他 Adaptor]
+    end
+
+    subgraph 服务层
+        F1[BillingSession&lt;br/&gt;统一计费]
+        F2[Quota Manager]
+        F3[Token Counter]
+        F4[Channel Affinity]
+        F5[Subscription Manager]
+    end
+
+    subgraph 数据层
+        G1[GORM ORM]
+        G2[(MySQL / PostgreSQL / SQLite)]
+        G3[(Redis)]
+        G4[内存 Cache]
+    end
+
+    subgraph AI 提供商
+        H1[OpenAI]
+        H2[Anthropic]
+        H3[Google Gemini]
+        H4[35+ 其他 API]
+    end
+
+    A1 --&gt; B1
+    A2 --&gt; B1
+    A3 --&gt; B1
+    B1 --&gt; B2
+    B2 --&gt; C1
+    B2 --&gt; C2
+    B2 --&gt; C4
+    C1 --&gt; C3
+    C2 --&gt; C3
+    C3 --&gt; D1
+    D1 --&gt; D2
+    D1 --&gt; D3
+    D2 --&gt; E1
+    E1 --&gt; E2
+    E1 --&gt; E3
+    E1 --&gt; E4
+    E1 --&gt; E5
+    E2 --&gt; H1
+    E3 --&gt; H2
+    E4 --&gt; H3
+    E5 --&gt; H4
+    D1 --&gt; F1
+    F1 --&gt; F2
+    F2 --&gt; G1
+    F1 --&gt; F5
+    F3 --&gt; F1
+    F4 --&gt; C3
+    G1 --&gt; G2
+    G1 --&gt; G3
+    G1 --&gt; G4</code></pre>
+<h3>架构分层</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>网关层</strong></td>
+<td>Gin HTTP 服务器 + 中间件管线</td>
+</tr>
+<tr>
+<td><strong>认证与分发层</strong></td>
+<td>令牌认证/会话认证 + 渠道分发器 + 限流器</td>
+</tr>
+<tr>
+<td><strong>请求处理核心</strong></td>
+<td>Controller + Relay Engine（同步）+ Task Engine（异步）</td>
+</tr>
+<tr>
+<td><strong>适配器层</strong></td>
+<td>Adaptor 接口 → 35+ 具体适配器</td>
+</tr>
+<tr>
+<td><strong>服务层</strong></td>
+<td>计费会话、额度管理、令牌估算、渠道亲和性缓存、订阅管理</td>
+</tr>
+<tr>
+<td><strong>数据层</strong></td>
+<td>数据库（MySQL/PostgreSQL/SQLite）+ Redis + 内存缓存</td>
+</tr>
+</tbody>
+</table>
+<h3>模块职责</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>职责</th>
+<th>关键文件/目录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>common/</code></td>
+<td>公共工具函数、配置、数据库连接、限流器、Redis 客户端</td>
+<td><code>common/</code></td>
+</tr>
+<tr>
+<td><code>constant/</code></td>
+<td>常量定义（API 类型、渠道类型、缓存键、上下文键）</td>
+<td><code>constant/</code></td>
+</tr>
+<tr>
+<td><code>controller/</code></td>
+<td>HTTP 请求处理器，路由处理函数</td>
+<td><code>controller/</code></td>
+</tr>
+<tr>
+<td><code>router/</code></td>
+<td>路由注册（API、Dashboard、Relay、Video）</td>
+<td><code>router/</code></td>
+</tr>
+<tr>
+<td><code>middleware/</code></td>
+<td>认证、分发、限流、日志、CORS 等中间件</td>
+<td><code>middleware/</code></td>
+</tr>
+<tr>
+<td><code>relay/</code></td>
+<td>核心转发引擎 + Adaptor 接口 + 35+ 渠道适配器</td>
+<td><code>relay/</code></td>
+</tr>
+<tr>
+<td><code>service/</code></td>
+<td>计费会话、渠道选择、令牌估算、额度管理、订阅</td>
+<td><code>service/</code></td>
+</tr>
+<tr>
+<td><code>model/</code></td>
+<td>GORM 数据模型、数据库迁移、缓存查询</td>
+<td><code>model/</code></td>
+</tr>
+<tr>
+<td><code>dto/</code></td>
+<td>数据传输对象，OpenAI/Claude/Gemini 等请求响应结构体</td>
+<td><code>dto/</code></td>
+</tr>
+<tr>
+<td><code>oauth/</code></td>
+<td>OAuth 登录提供者注册表（GitHub、Discord、自定义）</td>
+<td><code>oauth/</code></td>
+</tr>
+<tr>
+<td><code>setting/</code></td>
+<td>系统设置、分组比例、模型定价、操作设置</td>
+<td><code>setting/</code></td>
+</tr>
+<tr>
+<td><code>pkg/</code></td>
+<td>可复用包（billingexpr 计费表达式引擎、perf_metrics）</td>
+<td><code>pkg/</code></td>
+</tr>
+<tr>
+<td><code>i18n/</code></td>
+<td>国际化（en、zh-CN、zh-TW）</td>
+<td><code>i18n/</code></td>
+</tr>
+<tr>
+<td><code>logger/</code></td>
+<td>日志工具</td>
+<td><code>logger/</code></td>
+</tr>
+<tr>
+<td><code>types/</code></td>
+<td>公共类型定义</td>
+<td><code>types/</code></td>
+</tr>
+<tr>
+<td><code>web/</code></td>
+<td>前端 Dashboard（React）</td>
+<td><code>web/</code></td>
+</tr>
+</tbody>
+</table>
+<h2>4. 核心模块详解</h2>
+<h3>4.1 Relay 引擎 — 多协议转发核心</h3>
+<p>Relay 引擎是 New-API 的核心，负责接受客户端请求、选取适配器、转发到上游 AI 提供商并处理响应。</p>
+<p><strong>核心流程：</strong></p>
+<ol>
+<li><strong>协议识别</strong>：根据请求路径和头信息识别 <code>RelayFormat</code>（OpenAI / Claude / Gemini / Image / Audio 等）</li>
+<li><strong>请求验证</strong>：<code>GetAndValidateRequest()</code> 根据 <code>RelayFormat</code> 解析并验证请求</li>
+<li><strong>模型定价</strong>：<code>ModelPriceHelper()</code> 查表计算模型价格</li>
+<li><strong>预扣费</strong>：<code>PreConsumeBilling()</code> 创建 <code>BillingSession</code> 执行预扣费</li>
+<li><strong>渠道选择</strong>：<code>Distributor</code> 中间件选择可用渠道</li>
+<li><strong>适配器调用</strong>：<code>GetAdaptor(channel.Type)</code> 获取具体适配器</li>
+<li><strong>协议转换</strong>：适配器将 OpenAI 协议请求转换为上游协议</li>
+<li><strong>上游请求</strong>：发送 HTTP 请求到 AI 提供商</li>
+<li><strong>响应处理</strong>：<code>DoResponse()</code> 处理上游响应，返回标准化结果</li>
+<li><strong>后结算</strong>：<code>SettleBilling()</code> 根据实际用量结算</li>
+</ol>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Client
+    participant Gin as Gin Server
+    participant MW as Middleware&lt;br/&gt;Auth/Distributor
+    participant Ctrl as Controller
+    participant Relay as Relay Engine
+    participant Adaptor as Channel Adaptor
+    participant AI as AI Provider
+    participant Billing as BillingSession
+    participant DB as Database
+
+    Client-&gt;&gt;Gin: POST /v1/chat/completions
+    Gin-&gt;&gt;MW: 请求进入中间件管线
+    MW-&gt;&gt;MW: TokenAuth() — 验证令牌
+    MW-&gt;&gt;MW: Distribute() — 选择渠道
+    MW-&gt;&gt;MW: ModelRequestRateLimit() — 限流
+    MW-&gt;&gt;Ctrl: 进入 Controller
+
+    Ctrl-&gt;&gt;Relay: Relay(c, RelayFormatOpenAI)
+    Relay-&gt;&gt;Relay: GetAndValidateRequest() — 解析请求
+    Relay-&gt;&gt;Relay: GenRelayInfo() — 生成 RelayInfo
+    Relay-&gt;&gt;Relay: EstimateRequestToken() — 估算 token
+    Relay-&gt;&gt;Relay: ModelPriceHelper() — 计算价格
+    Relay-&gt;&gt;Billing: PreConsumeBilling() — 预扣费
+    Billing-&gt;&gt;DB: 减少用户额度
+    Billing--&gt;&gt;Relay: 预扣完成
+
+    loop 重试(最多 RetryTimes 次)
+        Relay-&gt;&gt;Adaptor: GetAdaptor(channel.Type)
+        Adaptor-&gt;&gt;Adaptor: Init(info)
+        Adaptor-&gt;&gt;Adaptor: ConvertOpenAIRequest() — 协议转换
+        Adaptor-&gt;&gt;Adaptor: GetRequestURL() — 构造 URL
+        Adaptor-&gt;&gt;Adaptor: SetupRequestHeader() — 设置头部
+        Adaptor-&gt;&gt;Adaptor: DoRequest() — 发送请求
+        AI--&gt;&gt;Adaptor: 上游响应
+        Adaptor-&gt;&gt;Adaptor: DoResponse() — 解析响应
+        Adaptor--&gt;&gt;Relay: usage+结果
+
+        alt 成功
+            Relay-&gt;&gt;Relay: 记录日志
+            Relay-&gt;&gt;Billing: SettleBilling() — 后结算
+            Billing-&gt;&gt;DB: 更新最终额度
+            Relay--&gt;&gt;Ctrl: 返回结果
+            Ctrl--&gt;&gt;Client: HTTP 200 + 响应体
+        else 失败
+            Relay-&gt;&gt;Relay: 判断是否重试
+            alt 需要重试
+                Relay-&gt;&gt;MW: getChannel() — 获取下一渠道
+            else 不重试
+                Ctrl--&gt;&gt;Client: 错误响应
+            end
+        end
+    end</code></pre>
+<h3>4.2 渠道适配器模式</h3>
+<p>New-API 支持 <strong>35+</strong> 不同的 AI 提供商，通过 <strong>Adaptor 接口</strong> 实现统一接入。</p>
+<pre><code class="language-go">// relay/channel/adapter.go
+type Adaptor interface {
+    Init(info *relaycommon.RelayInfo)
+    GetRequestURL(info *relaycommon.RelayInfo) (string, error)
+    SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error
+    ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.GeneralOpenAIRequest) (any, error)
+    DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error)
+    DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *types.NewAPIError)
+    GetModelList() []string
+    GetChannelName() string
+    // ... 以及其他协议转换方法
+}</code></pre>
+<p>每个提供商的适配器（如 <code>relay/channel/openai/</code>、<code>relay/channel/claude/</code>、<code>relay/channel/gemini/</code>）实现该接口，核心逻辑包括：</p>
+<ol>
+<li><strong>协议转换</strong>：OpenAI → 上游协议（如 OpenAI → Claude 消息格式）</li>
+<li><strong>请求/响应转换</strong>：适配上游 API 的差异</li>
+<li><strong>模型列表</strong>：返回该渠道支持的模型</li>
+</ol>
+<p>适配器注册采用<strong>工厂模式</strong>：</p>
+<pre><code class="language-mermaid">graph LR
+    A[GetAdaptor(apiType)] --&gt; B{Switch APIType}
+    B --&gt;|APITypeAnthropic| C[claude.Adaptor]
+    B --&gt;|APITypeOpenAI| D[openai.Adaptor]
+    B --&gt;|APITypeGemini| E[gemini.Adaptor]
+    B --&gt;|APITypeBaidu| F[baidu.Adaptor]
+    B --&gt;|...35+| G[...]</code></pre>
+<h3>4.3 渠道分发与亲和性</h3>
+<p>渠道分发是智能路由的关键，支持：</p>
+<ol>
+<li><strong>权重优先级</strong>：按渠道优先级排序</li>
+<li><strong>多 Key 轮询</strong>：同一渠道多个 Key 支持轮询/随机模式</li>
+<li><strong>渠道亲和性</strong>：基于 Cache 的请求亲和性，同一用户请求倾向同一渠道</li>
+<li><strong>自动分组</strong>：支持 <code>auto</code> 分组跨组重试</li>
+<li><strong>自动禁用</strong>：渠道连续失败自动禁用</li>
+<li><strong>健康检查</strong>：后台定时测试渠道可用性</li>
+</ol>
+<h3>4.4 统一计费系统</h3>
+<p>BillingSession 是 New-API 的计费核心，支持两种资金来源自动回退：</p>
+<pre><code class="language-mermaid">graph TD
+    A[PreConsumeBilling] --&gt; B{计费偏好}
+    B --&gt;|subscription_first| C[尝试订阅计费]
+    B --&gt;|wallet_first| D[尝试钱包计费]
+    B --&gt;|subscription_only| C
+    B --&gt;|wallet_only| D
+    C --&gt;|订阅可用| E[SubscriptionFunding]
+    C --&gt;|订阅不可用/额度不足| D
+    D --&gt;|余额充足| F[WalletFunding]
+    D --&gt;|余额不足| G[返回错误]
+    E --&gt; H[preConsume]
+    F --&gt; H
+    H --&gt; I{信任额度}
+    I --&gt;|用户额度 &gt; TrustQuota| J[信任旁路，不预扣]
+    I --&gt;|普通用户| K[预扣额度]
+    K --&gt; L[Settle / Refund]
+    J --&gt; L</code></pre>
+<h3>4.5 异步任务引擎</h3>
+<p>支持 Midjourney、Suno、Video 等异步任务的完整生命周期：</p>
+<ol>
+<li><strong>提交</strong> <code>submit</code> — 创建任务记录，预扣费</li>
+<li><strong>轮询</strong> <code>fetch</code> — 后台定时轮询上游</li>
+<li><strong>回调</strong> <code>notify</code> — 上游回调通知</li>
+<li><strong>查询</strong> <code>task/:id</code> — 查询任务状态</li>
+</ol>
+<pre><code class="language-mermaid">graph LR
+    A[用户提交任务] --&gt; B[RelayTaskSubmit]
+    B --&gt; C[创建 Task 记录]
+    C --&gt; D[返回 task_id]
+    D --&gt; E{后台轮询}
+    E --&gt;|fetch| F[TaskPollingAdaptor]
+    F --&gt; G[上游状态]
+    G --&gt;|success| H[更新 Task]
+    G --&gt;|processing| E
+    H --&gt; I[用户查询]
+    I --&gt; J[返回结果/URL]</code></pre>
+<h3>4.6 计费表达式引擎</h3>
+<p><code>pkg/billingexpr/</code> 实现了一个基于 <code>expr-lang/expr</code> 的表达式引擎，用于灵活定义计费规则：</p>
+<pre><code class="language-go">// 示例表达式
+&quot;v1:tier(p, 0.0001) + tier(c, 0.00005)&quot;</code></pre>
+<p>支持变量：<code>p</code>（提示令牌）、<code>c</code>（补全令牌）、<code>img</code>（图片数）等。 支持函数：<code>tier()</code>（阶梯计价）、<code>header()</code>（按请求头）、<code>param()</code>（按参数）等。</p>
+<h2>5. 关键设计决策</h2>
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>选择</th>
+<th>替代方案</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>协议标准</strong></td>
+<td>以 OpenAI 协议为内部标准</td>
+<td>多协议混用</td>
+<td>OpenAI 是事实标准，内部统一为 OpenAI 格式，适配器负责双向转换</td>
+</tr>
+<tr>
+<td><strong>适配器模式</strong></td>
+<td>接口驱动 + 工厂模式</td>
+<td>基于反射/配置</td>
+<td>编译期类型安全，每个渠道独立编译，易于扩展新提供商</td>
+</tr>
+<tr>
+<td><strong>计费机制</strong></td>
+<td>预扣费 + 后结算</td>
+<td>纯后结算</td>
+<td>防止用户超额使用；信任旁路（TrustQuota）优化高频低耗用户</td>
+</tr>
+<tr>
+<td><strong>缓存策略</strong></td>
+<td>内存缓存 + 可选 Redis</td>
+<td>仅 Redis/仅 DB</td>
+<td>内存缓存提供亚毫秒级渠道查找；Redis 可选用于分布式部署</td>
+</tr>
+<tr>
+<td><strong>重试机制</strong></td>
+<td>控制器层循环 + 渠道分发轮换</td>
+<td>Adaptor 内重试</td>
+<td>跨渠道重试（渠道 A 失败→渠道 B），提高可用性</td>
+</tr>
+<tr>
+<td><strong>前端方案</strong></td>
+<td>React SPA，两套主题（default + classic）</td>
+<td>SSR / 单一前端</td>
+<td>前后端分离便于开发；两套主题兼容老用户，通过 embed.FS 嵌入二进制</td>
+</tr>
+<tr>
+<td><strong>计费来源</strong></td>
+<td>订阅优先，降级到钱包</td>
+<td>仅钱包</td>
+<td>支持 SaaS 商业模式，提供经常性收入</td>
+</tr>
+<tr>
+<td><strong>国际化</strong></td>
+<td>go-i18n 运行时翻译</td>
+<td>编译时多语言</td>
+<td>运行时动态切换语言，降低部署复杂度</td>
+</tr>
+</tbody>
+</table>
+<h2>6. 数据流 / 请求流</h2>
+<h3>6.1 同步请求流（Chat Completions）</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant C as 客户端
+    participant G as Gin Server
+    participant M1 as TokenAuth Middleware
+    participant M2 as Distribute Middleware
+    participant CR as Controller/relay.go
+    participant RE as Relay Engine
+    participant AD as Adaptor
+    participant AI as AI Provider
+    participant DB as Database/Redis
+
+    C-&gt;&gt;G: POST /v1/chat/completions&lt;br/&gt;Authorization: Bearer sk-xxx
+    G-&gt;&gt;M1: 解析 API Key
+    M1-&gt;&gt;DB: ValidateUserToken(key)
+    DB--&gt;&gt;M1: Token + User Info
+    M1-&gt;&gt;M1: 检查 IP 限制、额度、模型权限
+    M1--&gt;&gt;G: 上下文注入 (user_id, token_id, group)
+
+    G-&gt;&gt;M2: 分发渠道
+    M2-&gt;&gt;M2: getModelFromRequest()
+    M2-&gt;&gt;DB/内存: GetRandomSatisfiedChannel(group, model)
+    DB/内存--&gt;&gt;M2: channel
+    M2-&gt;&gt;M2: SetupContextForSelectedChannel()
+    M2--&gt;&gt;G: 渠道上下文注入
+
+    G-&gt;&gt;CR: relay.Relay(c, OpenAI)
+    CR-&gt;&gt;RE: GetAndValidateRequest()
+    RE--&gt;&gt;CR: request
+    CR-&gt;&gt;RE: GenRelayInfo()
+    RE--&gt;&gt;CR: relayInfo
+    CR-&gt;&gt;RE: EstimateRequestToken()
+    CR-&gt;&gt;RE: ModelPriceHelper()
+    RE-&gt;&gt;DB: 获取模型定价
+    DB--&gt;&gt;RE: priceData
+    RE--&gt;&gt;CR: priceData
+
+    CR-&gt;&gt;DB: PreConsumeBilling(预扣费)
+    DB--&gt;&gt;CR: 预扣成功
+
+    loop 重试(最多 RetryTimes)
+        CR-&gt;&gt;RE: getChannel()
+        RE-&gt;&gt;AD: GetAdaptor(channel.Type)
+        AD-&gt;&gt;AD: Init()
+        AD-&gt;&gt;AD: ConvertOpenAIRequest()
+        AD-&gt;&gt;AD: GetRequestURL() / SetupRequestHeader()
+        AD-&gt;&gt;AD: DoRequest()
+        AD-&gt;&gt;AI: HTTP 请求
+        AI--&gt;&gt;AD: HTTP 响应 + SSE
+        AD-&gt;&gt;AD: DoResponse()
+        AD--&gt;&gt;RE: usage
+        RE--&gt;&gt;CR: result
+
+        alt 成功
+            CR-&gt;&gt;DB: SettleBilling(结算)
+            CR--&gt;&gt;C: HTTP 200 + SSE 流/JSON
+        else 失败 &amp; 可重试
+            CR-&gt;&gt;CR: 禁用渠道(如需要)
+            CR-&gt;&gt;RE: 继续重试
+        else 失败 &amp; 不可重试
+            CR-&gt;&gt;DB: Refund(退款)
+            CR--&gt;&gt;C: 错误响应
+        end
+    end</code></pre>
+<h3>6.2 配置热更新流程</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Admin
+    participant Controller
+    participant DB
+    participant OptionMap as Option 内存 Map
+    participant Background as Background Sync
+
+    Admin-&gt;&gt;Controller: PUT /api/option/ (更新配置)
+    Controller-&gt;&gt;DB: 更新 option 表
+    DB--&gt;&gt;Controller: 成功
+    Controller-&gt;&gt;OptionMap: 更新内存缓存
+    Controller--&gt;&gt;Admin: 响应成功
+
+    loop SyncFrequency(默认60s)
+        Background-&gt;&gt;DB: SELECT * FROM options
+        DB--&gt;&gt;Background: 全量配置
+        Background-&gt;&gt;OptionMap: 替换内存缓存
+    end</code></pre>
+<h2>7. 设计模式</h2>
+<table>
+<thead>
+<tr>
+<th>模式名称</th>
+<th>使用位置</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>工厂模式</strong></td>
+<td><code>relay.GetAdaptor()</code>、<code>relay.GetTaskAdaptor()</code></td>
+<td>根据 API 类型创建对应的适配器实例</td>
+</tr>
+<tr>
+<td><strong>策略模式</strong></td>
+<td><code>service/billing_session.go</code> — WalletFunding / SubscriptionFunding</td>
+<td>不同计费来源的实现可互换，运行时根据用户偏好选择</td>
+</tr>
+<tr>
+<td><strong>中间件模式</strong></td>
+<td><code>middleware/*.go</code> — Gin 中间件管线</td>
+<td>认证、分发、限流、日志等横切关注点的链式处理</td>
+</tr>
+<tr>
+<td><strong>注册表模式</strong></td>
+<td><code>oauth/registry.go</code> — OAuth Provider 注册</td>
+<td>动态注册/注销 OAuth 登录提供者，支持自定义提供商</td>
+</tr>
+<tr>
+<td><strong>管道模式</strong></td>
+<td><code>controller/relay.go</code> — 请求处理管线</td>
+<td>请求经过认证→分发→预扣费→转发→响应→后结算的有序处理</td>
+</tr>
+<tr>
+<td><strong>外观模式</strong></td>
+<td><code>service/billing_session.go</code></td>
+<td>统一 BillingSession 封装预扣费/结算/退款完整生命周期</td>
+</tr>
+<tr>
+<td><strong>观察者模式</strong></td>
+<td><code>model/channel_cache.go</code> SyncChannelCache</td>
+<td>后台 goroutine 定期同步渠道/能力缓存到内存</td>
+</tr>
+<tr>
+<td><strong>模板方法模式</strong></td>
+<td><code>relay/relay_task.go</code> RelayTaskSubmit</td>
+<td>异步任务提交流程固定（验证→计费→请求→响应），具体步骤由 Adaptor 实现</td>
+</tr>
+<tr>
+<td><strong>单例模式</strong></td>
+<td><code>model/main.go</code> DB / LOG_DB / RDB</td>
+<td>数据库和 Redis 客户端全局唯一实例</td>
+</tr>
+<tr>
+<td><strong>表达式模式/解释器</strong></td>
+<td><code>pkg/billingexpr/compile.go</code></td>
+<td>计费表达式 DSL 的解析和执行</td>
+</tr>
+</tbody>
+</table>
+<h2>8. 工程实践</h2>
+<h3>测试策略</h3>
+<table>
+<thead>
+<tr>
+<th>测试类型</th>
+<th>覆盖范围</th>
+<th>文件示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单元测试</td>
+<td>渠道适配器</td>
+<td><code>relay/channel/<em>/</em>_test.go</code></td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td>服务层 (计费/结算)</td>
+<td><code>service/*_test.go</code></td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td>DTO 序列化</td>
+<td><code>dto/*_test.go</code></td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td>模型层</td>
+<td><code>model/*_test.go</code></td>
+</tr>
+<tr>
+<td>集成测试</td>
+<td>渠道上游更新</td>
+<td><code>controller/channel_upstream_update_test.go</code></td>
+</tr>
+</tbody>
+</table>
+<p>测试框架采用 Go 原生 <code>testing</code> + <code>testify</code>，主要验证：</p>
+<ul>
+<li><strong>计费表达式解析</strong>：<code>billing_expr_request_test.go</code> 验证不同表达式版本的正确性</li>
+<li><strong>价格计算</strong>：<code>price_test.go</code> 验证阶梯/并发/按次等不同计费模式</li>
+<li><strong>流式响应扫描</strong>：<code>stream_scanner_test.go</code> 验证 SSE 流式响应的正确解析</li>
+<li><strong>配额扣减</strong>：<code>text_quota_test.go</code> 验证 Token 估算和额度扣减逻辑</li>
+<li><strong>渠道配置</strong>：<code>channel_upstream_update_test.go</code> 验证渠道模型更新逻辑</li>
+</ul>
+<p>当前共有 <strong>35+</strong> 个测试文件。从测试覆盖来看，核心计费和分发逻辑有较好的覆盖，但整体测试覆盖率仍有提升空间。</p>
+<h3>发布流程</h3>
+<pre><code class="language-mermaid">graph LR
+    A[Git Tag 推送] --&gt; B[GitHub Actions 触发]
+    B --&gt; C{Docker Build}
+    C --&gt; D[Linux/amd64]
+    C --&gt; E[Linux/arm64]
+    D --&gt; F[Multi-arch Manifest]
+    E --&gt; F
+    F --&gt; G[Push to Docker Hub&lt;br/&gt;calciumion/new-api]
+    B --&gt; H[Release 发布]
+    B --&gt; I[SBOM + Cosign 签名]</code></pre>
+<p>CI/CD 流水线特性：</p>
+<ul>
+<li><strong>多架构构建</strong>：同时构建 amd64 和 arm64，并创建多架构 manifest</li>
+<li><strong>镜像签名</strong>：使用 Cosign 进行镜像签名和验证</li>
+<li><strong>SBOM</strong>：生成软件物料清单</li>
+<li><strong>版本管理</strong>：基于 Git Tag 自动发布版本</li>
+<li><strong>Electron 构建</strong>：支持桌面端打包（macOS + Windows）</li>
+<li><strong>Nightly 构建</strong>：每日构建开发版</li>
+<li><strong>PR 检查</strong>：提交 PR 时自动运行检查和构建测试</li>
+</ul>
+<h3>版本管理</h3>
+<p>当前最新版本为 <strong>v0.10+</strong>，遵循语义化版本。项目从 <code>songquanpeng/one-api</code> fork 而来，持续在渠道支持、计费灵活性和性能方面进行优化。</p>
+<h2>9. 总结与评价</h2>
+<h3>亮点</h3>
+<ol>
+<li><strong>卓越的多提供商支持</strong>：35+ AI 提供商通过适配器模式统一接入，新增提供商只需实现 Adaptor 接口</li>
+<li><strong>灵活的双计费机制</strong>：钱包 + 订阅双轨制，支持阶梯计费、按次计费、并发计费，计费表达式 DSL 提供极高的灵活性</li>
+<li><strong>完整的异步任务管理</strong>：Midjourney、Suno、视频生成等异步任务的完整生命周期管理（提交→轮询→回调→查询）</li>
+<li><strong>智能渠道路由</strong>：基于优先级/权重/亲和性/健康检查的渠道分发，支持跨分组重试，多 Key 轮询</li>
+<li><strong>健壮的错误处理</strong>：自动禁用失败渠道，细粒度的重试策略（按 HTTP 状态码配置），渠道错误日志分析</li>
+<li><strong>企业级特性</strong>：订阅计费、2FA 认证、WebAuthn 通行密钥、OAuth 登录、IP 白名单、限流、敏感词检测</li>
+<li><strong>热更新</strong>：配置更改无需重启，后台 goroutine 定期同步数据库配置到内存</li>
+<li><strong>部署灵活</strong>：单文件二进制 + SQLite 开箱即用，也可配置 MySQL/PostgreSQL + Redis 分布式部署</li>
+<li><strong>前端双主题</strong>：default（现代 Radix UI）和 classic（传统 UI），通过 embed.FS 嵌入二进制，部署简单</li>
+<li><strong>国际化</strong>：支持中/英/日/法等语言的运行时切换</li>
+</ol>
+<h3>可改进之处</h3>
+<ol>
+<li><strong>测试覆盖率</strong>：核心计费和分发逻辑有测试覆盖，但整体测试覆盖率偏低（尤其 controller 层），增加集成测试会提升代码健壮性</li>
+<li><strong>监控与可观测性</strong>：虽然有 Pyroscope profiling 和基础统计中间件，但缺乏结构化链路追踪（OpenTelemetry）和详细 API 监控面板</li>
+<li><strong>缓存一致性</strong>：内存缓存定期全量同步（而非增量），高频变更场景下可能短期不一致；引入 Redis Pub/Sub 或变更事件可改善</li>
+<li><strong>模块化拆分</strong>：<code>common/</code> 包过重（70+ 文件），可拆分为更细粒度的模块（config、cache、db 等）</li>
+<li><strong>API 版本管理</strong>：适配器版本管理未显式化，上游 API 变更时新旧版本兼容处理可更规范化</li>
+<li><strong>文档完整性</strong>：虽然代码注释和 README 较为完善，但完整的 API 文档和开发者指南可以进一步提升项目可接入性</li>
+<li><strong>分布式部署支持</strong>：Master/Slave 节点机制初步存在，但缺少分布式锁和完整的 leader 选举机制</li>
+</ol>
+<h2>参考</h2>
+<ul>
+<li><a href="https://github.com/QuantumNous/new-api">GitHub 仓库 - QuantumNous/new-api</a></li>
+<li><a href="https://github.com/songquanpeng/one-api">上游项目 - songquanpeng/one-api</a></li>
+<li><a href="https://github.com/gin-gonic/gin">Gin Web Framework</a></li>
+<li><a href="https://gorm.io/">GORM ORM</a></li>
+<li><a href="https://github.com/expr-lang/expr">expr-lang/expr — 表达式引擎</a></li>
+</ul>
+
+      </div>
+    </article>
+
+    <footer class="site-footer">
+      <p><a href="/">返回目录</a> · <a href="https://github.com/wangb/opensource-arch">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>

@@ -23,3 +23,6 @@ statuses/
 
 # Dependencies
 node_modules/
+
+# Generated site (tracked in repo for GitHub Pages)
+# docs/ is intentionally NOT ignored
