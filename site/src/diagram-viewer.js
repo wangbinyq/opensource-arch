@@ -86,7 +86,6 @@ function openFullscreen(pre) {
     cursor: "grab",
     excludeClass: "mermaid-fullscreen__toolbar",
     startScale: 1,
-    contain: "outside",
   });
 
   function updateZoomLabel() {
