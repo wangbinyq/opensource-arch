@@ -318,21 +318,61 @@ function renderHead(title: string, description: string = ""): string {
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#e8d5cf',
+        primaryTextColor: '#2c2a27',
+        primaryBorderColor: '#bfb9b1',
+        lineColor: '#9f9890',
+        secondaryColor: '#fdfbf8',
+        tertiaryColor: '#f7f4ef',
+        fontFamily: 'system-ui, "Noto Sans SC", sans-serif',
+        fontSize: '14px',
+        nodeBorder: '#bfb9b1',
+        clusterBkg: '#fdfbf8',
+        clusterBorder: '#d8d3cc',
+        edgeLabelBackground: '#f7f4ef',
+      }
+    });
 
-    document.addEventListener('click', (e) => {
-      const pre = e.target.closest('pre.mermaid');
-      if (!pre) return;
+    function closeOverlay(overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 150);
+    }
+
+    function openFullscreen(pre) {
       const svg = pre.querySelector('svg');
       if (!svg) return;
 
       const overlay = document.createElement('div');
       overlay.className = 'mermaid-fullscreen';
-      overlay.innerHTML = `<button class="mermaid-fullscreen__close" aria-label="Close">\u2715</button>
-        <div class="mermaid-fullscreen__diagram">${svg.outerHTML}</div>`;
-      overlay.querySelector('.mermaid-fullscreen__close').onclick = () => overlay.remove();
-      overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.remove(); });
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Diagram fullscreen view');
+      overlay.innerHTML =
+        '<div class="mermaid-fullscreen__topbar">' +
+          '<button class="mermaid-fullscreen__close" aria-label="Close">\u2715</button>' +
+        '</div>' +
+        '<div class="mermaid-fullscreen__diagram">' + svg.outerHTML + '</div>';
+
+      const closeBtn = overlay.querySelector('.mermaid-fullscreen__close');
+      closeBtn.addEventListener('click', () => closeOverlay(overlay));
+      overlay.addEventListener('click', (ev) => { if (ev.target === overlay) closeOverlay(overlay); });
+
+      const onKey = (ev) => {
+        if (ev.key === 'Escape') { closeOverlay(overlay); document.removeEventListener('keydown', onKey); }
+      };
+      document.addEventListener('keydown', onKey);
+
       document.body.appendChild(overlay);
+      closeBtn.focus();
+    }
+
+    document.addEventListener('click', (e) => {
+      const pre = e.target.closest('pre.mermaid');
+      if (pre) openFullscreen(pre);
     });
   </script>
 </head>`;
