@@ -363,9 +363,61 @@ body {
 }
 
 /* Mermaid diagrams */
-.article-body pre code.language-mermaid {
-  background: none;
-  color: inherit;
+.article-body pre.mermaid {
+  position: relative;
+  cursor: zoom-in;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: var(--sp-lg);
+}
+
+.article-body pre.mermaid:hover {
+  border-color: var(--border-strong);
+}
+
+/* Fullscreen overlay */
+.mermaid-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-lg);
+  cursor: default;
+}
+
+.mermaid-fullscreen__close {
+  position: absolute;
+  top: var(--sp-md);
+  right: var(--sp-md);
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--fg-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration) var(--ease-out),
+              border-color var(--duration) var(--ease-out);
+}
+
+.mermaid-fullscreen__close:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.mermaid-fullscreen__diagram {
+  max-width: 100%;
+  max-height: calc(100vh - 80px);
+  overflow: auto;
 }
 
 /* --- Footer --- */

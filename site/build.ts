@@ -319,6 +319,21 @@ function renderHead(title: string, description: string = ""): string {
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     mermaid.initialize({ startOnLoad: true, theme: 'default' });
+
+    document.addEventListener('click', (e) => {
+      const pre = e.target.closest('pre.mermaid');
+      if (!pre) return;
+      const svg = pre.querySelector('svg');
+      if (!svg) return;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'mermaid-fullscreen';
+      overlay.innerHTML = `<button class="mermaid-fullscreen__close" aria-label="Close">\u2715</button>
+        <div class="mermaid-fullscreen__diagram">${svg.outerHTML}</div>`;
+      overlay.querySelector('.mermaid-fullscreen__close').onclick = () => overlay.remove();
+      overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+    });
   </script>
 </head>`;
 }
