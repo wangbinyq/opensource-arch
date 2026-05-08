@@ -1,5 +1,7 @@
 # Craft Agent workspace files
 config.json
+analyses/daily-summary-*.md
+analyses/daily-summary-*.json
 events.jsonl
 views.json
 .claude-plugin/
