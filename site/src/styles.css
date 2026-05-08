@@ -516,18 +516,7 @@ body {
   display: block;
 }
 
-@media (max-width: 600px) {
-  .mermaid-fullscreen {
-    padding: var(--sp-lg) var(--sp-md);
-  }
 
-  .article-body pre.mermaid {
-    max-width: none;
-    margin-left: calc(-1 * var(--sp-lg));
-    margin-right: calc(-1 * var(--sp-lg));
-    border-radius: 0;
-  }
-}
 
 /* --- Footer --- */
 
@@ -567,22 +556,120 @@ body {
 
 /* --- Responsive --- */
 
-@media (max-width: 600px) {
+/* Tablet and below */
+@media (max-width: 767px) {
+  /* Tighter spacing scale for small screens */
+  :root {
+    --sp-2xl: 3rem;
+    --sp-3xl: 4.5rem;
+  }
+
   html {
     font-size: 15.5px;
   }
 
+  /* Less page edge padding on mobile */
+  .page {
+    padding-left: var(--sp-md);
+    padding-right: var(--sp-md);
+  }
+
+  /* --- Header --- */
+
   .site-header {
     padding-top: var(--sp-2xl);
+    padding-bottom: var(--sp-lg);
   }
+
+  .article-header {
+    padding-top: var(--sp-xl);
+    padding-bottom: var(--sp-lg);
+  }
+
+  .article-header__title {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+  }
+
+  /* --- Index list --- */
 
   .index__link {
     flex-direction: column;
     gap: var(--sp-xs);
   }
 
+  .index__desc {
+    max-width: none;
+  }
+
+  /* --- Article body --- */
+
+  .article-body h2 {
+    font-size: 1.3rem;
+    margin-top: var(--sp-xl);
+  }
+
+  .article-body h3 {
+    font-size: 1.05rem;
+    margin-top: var(--sp-lg);
+  }
+
+  .article-body blockquote {
+    padding-left: var(--sp-md);
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .article-body pre {
-    padding: var(--sp-md);
+    padding: var(--sp-sm) 0.75rem;
     font-size: 0.8rem;
+  }
+
+  /* Tables: horizontal scroll */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-left: calc(-1 * var(--sp-md));
+    margin-right: calc(-1 * var(--sp-md));
+    padding: 0 var(--sp-md);
+  }
+
+  .table-scroll table {
+    min-width: 400px;
+  }
+
+  /* --- Footer --- */
+
+  .site-footer {
+    margin-top: var(--sp-2xl);
+    padding-top: var(--sp-lg);
+    padding-bottom: var(--sp-lg);
+  }
+
+  /* --- Back link --- */
+
+  .back-link {
+    margin-bottom: var(--sp-lg);
+  }
+
+  /* --- Mermaid inline --- */
+
+  .article-body pre.mermaid {
+    max-width: none;
+    margin-left: calc(-1 * var(--sp-md));
+    margin-right: calc(-1 * var(--sp-md));
+    padding-left: var(--sp-md);
+    padding-right: var(--sp-md);
+    border-radius: 0;
+  }
+
+  /* Fullscreen overlay: larger touch targets */
+  .mermaid-toolbar__btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mermaid-fullscreen__close {
+    width: 44px;
+    height: 44px;
   }
 }

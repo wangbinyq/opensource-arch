@@ -86,6 +86,7 @@ function openFullscreen(pre) {
     cursor: "grab",
     excludeClass: "mermaid-fullscreen__toolbar",
     startScale: 1,
+    contain: "outside",
   });
 
   function updateZoomLabel() {
@@ -190,6 +191,9 @@ function openFullscreen(pre) {
   document.addEventListener("keydown", onKey);
 
   closeBtn.focus();
+
+  // Auto-fit diagram to viewport on open
+  requestAnimationFrame(() => fitDiagram());
 }
 
 document.addEventListener("click", (e) => {

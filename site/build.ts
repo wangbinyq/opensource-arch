@@ -62,7 +62,7 @@ function parseMarkdown(md: string): string {
   function closeTable() {
     if (!inTable) return;
     if (tableRows.length > 0) {
-      html += "<table>\n<thead>\n<tr>\n";
+      html += '<div class="table-scroll"><table>\n<thead>\n<tr>\n';
       const header = tableRows[0];
       for (let i = 0; i < header.length; i++) {
         const align = tableAlign[i]
@@ -85,7 +85,7 @@ function parseMarkdown(md: string): string {
         }
         html += "</tbody>\n";
       }
-      html += "</table>\n";
+      html += "</table></div>\n";
     }
     inTable = false;
     tableRows = [];
