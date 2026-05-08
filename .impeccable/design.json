@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-08T05:32:00Z",
+  "title": "Design System: OpenSource Arch",
+  "extensions": {
+    "colorMeta": {
+      "bg": { "role": "neutral", "displayName": "暖纸白", "canonical": "oklch(97% 0.008 80)", "tonalRamp": ["#1e1c19", "#2c2a27", "#3d3a35", "#524e48", "#6e6963", "#9f9890", "#d8d3cc", "#f7f4ef"] },
+      "fg": { "role": "neutral", "displayName": "暖炭黑", "canonical": "oklch(22% 0.015 60)" },
+      "accent": { "role": "primary", "displayName": "铁锈红", "canonical": "oklch(52% 0.14 25)", "tonalRamp": ["#2d1009", "#5c2012", "#a84832", "#c4694f", "#e8d5cf", "#f4ebe7", "#faf5f2", "#fdfbf8"] }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "链接和交互状态的颜色过渡。不超过 0.2s。" }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px", "purpose": "移动端断点。字体缩小，间距收紧。" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Article Link",
+      "kind": "custom",
+      "refersTo": "link",
+      "description": "文章列表中的分析条目链接。",
+      "html": "<a class=\"ds-link\" href=\"#\">\n  <span class=\"ds-link-name\">Redis 架构分析</span>\n  <span class=\"ds-link-meta">2026-05-08</span>\n</a>",
+      "css": ".ds-link { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1rem 0; text-decoration: none; color: #2c2a27; border-bottom: 1px solid #d8d3cc; transition: color 0.2s cubic-bezier(0.25, 1, 0.5, 1); font-family: Georgia, 'Noto Serif SC', serif; font-weight: 600; font-size: 1.15rem; } .ds-link:hover { color: #a84832; } .ds-link:focus-visible { outline: 2px solid #a84832; outline-offset: 3px; border-radius: 2px; } .ds-link-meta { font-family: system-ui, sans-serif; font-size: 0.85rem; color: #9f9890; white-space: nowrap; font-weight: 400; }"
+    },
+    {
+      "name": "Code Block",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "内嵌代码块，深色背景，单色文字。",
+      "html": "<pre class=\"ds-code\"><code>func main() {\n    fmt.Println(\"hello\")\n}</code></pre>",
+      "css": ".ds-code { background: #1e1c19; color: #d4cfc8; padding: 1.75rem; border-radius: 6px; overflow-x: auto; line-height: 1.5; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.88rem; margin: 1.75rem 0; }"
+    },
+    {
+      "name": "Page Header",
+      "kind": "custom",
+      "description": "站点首页标题区域。",
+      "html": "<header class=\"ds-header\">\n  <h1 class=\"ds-header__title\">OpenSource Arch</h1>\n  <p class=\"ds-header__tagline\">著名开源项目架构分析</p>\n</header>",
+      "css": ".ds-header { padding: 8rem 0 3rem; } .ds-header__title { font-family: Georgia, 'Noto Serif SC', serif; font-weight: 700; font-size: clamp(1.6rem, 3.5vw, 2.4rem); line-height: 1.15; letter-spacing: -0.02em; color: #2c2a27; } .ds-header__tagline { margin-top: 0.5rem; font-size: 1rem; font-weight: 300; color: #6e6963; max-width: 38ch; font-family: system-ui, 'Noto Sans SC', sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Desk",
+    "overview": "一张干净的书桌，温暖的灯光，一本打开的书。没有多余的装饰，但也不冷清。这套设计系统做的事情很简单：让架构分析文章读起来舒服。不抢戏，不炫技，比纯黑白多一点温度。",
+    "keyCharacteristics": ["温暖的中性色调，不是冷灰也不是纯白", "衬线标题传递编辑质感，无衬线正文保证可读性", "几乎没有圆角，不用阴影，用背景色差异表达层次", "一个强调色，用得少，只在链接和关键交互处出现"],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "全站只有一个强调色。不搞多色分类、不按项目变色。", "section": "colors" },
+      { "name": "The No-Flat-Scale Rule", "body": "标题层级之间必须有明显的尺寸和字重差异。", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "整个站点零阴影。用背景色或边框替代。", "section": "elevation" }
+    ],
+    "dos": ["用暖中性色而非纯黑白", "限制行宽在 65-75ch", "保持间距有节奏", "用背景色差异而非阴影", "保证对比度 ≥ 4.5:1"],
+    "donts": ["用渐变", "加动画", "用圆角超过 6px", "用彩色边框条纹", "加广告或弹窗", "搞大数字和 CTA", "用多色系统"]
+  }
+}
