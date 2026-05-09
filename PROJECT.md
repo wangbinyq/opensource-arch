@@ -23,29 +23,34 @@
 8. **工程实践** — 测试、部署、版本管理
 9. **总结与评价** — 亮点与可改进之处
 
-## 路线图
+## 已完成分析
 
-### Phase 1: 奠基（当前）
-- [x] 搭建项目框架
-- [ ] 完成分析文档模板
-- [ ] 完成第一个项目分析（Redis 或 Nginx）
+| # | 项目 | 领域 | 完成日期 | 分析文档 |
+|---|------|------|----------|----------|
+| 1 | **Miniflux** | RSS 阅读器 | 2026-05-08 | [analyses/miniflux/](./analyses/miniflux/) |
+| 2 | **New-API** | AI API 网关 | 2026-05-08 | [analyses/new-api/](./analyses/new-api/) |
+| 3 | **RSSHub** | RSS 聚合器 | 2026-05-08 | [analyses/rsshub/](./analyses/rsshub/) |
+| 4 | **nanoGPT** | GPT 训练框架 | 2026-05-09 | [analyses/nanogpt/](./analyses/nanogpt/) |
+| 5 | **LobeChat** | AI Agent 框架 | 2026-05-09 | [analyses/lobehub/](./analyses/lobehub/) |
+| 6 | **Coolify** | 自托管 PaaS | 2026-05-09 | [analyses/coolify/](./analyses/coolify/) |
+| 7 | **Dokploy** | 自托管 PaaS | 2026-05-09 | [analyses/dokploy/](./analyses/dokploy/) |
+| 8 | **pi-mono** | AI Agent 框架 | 2026-05-09 | [analyses/pi-mono/](./analyses/pi-mono/) |
+| 9 | **Gitea** | Git 服务 | 2026-05-09 | [analyses/gitea/](./analyses/gitea/) |
+| 10 | **Nitter** | Twitter 替代前端 | 2026-05-09 | [analyses/nitter/](./analyses/nitter/) |
+| 11 | **Redlib** | Reddit 替代前端 | 2026-05-09 | [analyses/redlib/](./analyses/redlib/) |
 
-### Phase 2: 核心分析（Q2-Q3）
-- [ ] Redis 架构分析
-- [ ] Nginx 架构分析
-- [ ] Git 内部原理
-- [ ] Kubernetes 控制平面
+## 改进任务跟踪
 
-### Phase 3: 扩展（Q4）
-- [ ] Linux Kernel 初步分析
-- [ ] PostgreSQL 查询引擎
-- [ ] LLVM 编译器架构
-- [ ] TensorFlow/PyTorch 计算图
+各项目分析中发现的改进点见 [TASKS.md](./TASKS.md)，共 **52 项**（高优先级 10 项，中优先级 28 项，低优先级 14 项）。
 
-### Phase 4: 持续维护
-- 跟进项目版本更新
-- 补充遗漏的细节
-- 社区 PR 审核
+## 待分析项目
+
+| 项目 | 领域 | 状态 |
+|------|------|------|
+| Redis | 缓存/数据库 | 📝 待分析 |
+| Nginx | Web 服务器 | 📝 待分析 |
+| Linux Kernel | OS | 📝 待分析 |
+| Kubernetes | 容器编排 | 📝 待分析 |
 
 ## 工具链
 
