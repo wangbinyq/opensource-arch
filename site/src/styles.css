@@ -187,10 +187,16 @@ body {
   color: var(--fg-muted);
   text-decoration: none;
   transition: color var(--duration) var(--ease-out);
+  border-radius: 2px;
 }
 
 .index__sub-link:hover {
   color: var(--accent);
+}
+
+.index__sub-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* --- Article page --- */
