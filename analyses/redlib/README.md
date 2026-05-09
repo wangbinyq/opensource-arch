@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| Redlib | N/A | https://github.com/redlib-org/redlib | Rust | ~6k | AGPL-3.0-only | 社区维护 |
+| 项目 | 信息 |
+|------|------|
+| 官网 | — |
+| GitHub | [redlib-org/redlib](https://github.com/redlib-org/redlib) |
+| 编程语言 | Rust |
+| Star 数 | ~6k |
+| 许可证 | AGPL-3.0-only |
+| 核心维护者 | 社区维护 |
 
-**项目简介**: Reddit 的替代性私有前端（源自 Libreddit），采用 Rust 编写，零 unsafe 代码。通过自建轻量级 HTTP 框架、模拟官方客户端 OAuth 流程、以及基于 Cookie 的无状态持久化，在 6,700 行 Rust 代码中实现了隐私优先、高性能的 Reddit 浏览体验。
+**项目简介**
+
+Redlib 是 Reddit 的替代性私有前端（源自 Libreddit），采用 Rust 编写，零 unsafe 代码。通过自建轻量级 HTTP 框架、模拟官方客户端 OAuth 流程、以及基于 Cookie 的无状态持久化，在 6,700 行 Rust 代码中实现了隐私优先、高性能的 Reddit 浏览体验。
 
 ## 2. 技术栈
 

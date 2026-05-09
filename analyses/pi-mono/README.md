@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| pi-mono | 无 | https://github.com/badlogic/pi-mono | TypeScript | ~2k | MIT | badlogicgames |
+| 项目 | 信息 |
+|------|------|
+| 官网 | — |
+| GitHub | [badlogic/pi-mono](https://github.com/badlogic/pi-mono) |
+| 编程语言 | TypeScript |
+| Star 数 | ~2k |
+| 许可证 | MIT |
+| 核心维护者 | badlogicgames |
 
-**项目简介**: pi-mono 是一个 AI 编程 Agent 框架的 Monorepo，提供完整的、可扩展的、多模态的 AI Agent 运行时，涵盖多 Provider LLM 统一调用、Agent 循环（Think→Act→Observe）、TUI 交互、Web UI 和前端组件的完整链路。
+**项目简介**
+
+pi-mono 是一个 AI 编程 Agent 框架的 Monorepo，提供完整的、可扩展的、多模态的 AI Agent 运行时，涵盖多 Provider LLM 统一调用、Agent 循环（Think→Act→Observe）、TUI 交互、Web UI 和前端组件的完整链路。
 
 ## 2. 技术栈
 

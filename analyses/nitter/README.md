@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| Nitter | - | https://github.com/zedeus/nitter | Nim | ~10k | AGPL-3.0 | Zedus |
+| 项目 | 信息 |
+|------|------|
+| 官网 | — |
+| GitHub | [zedeus/nitter](https://github.com/zedeus/nitter) |
+| 编程语言 | Nim |
+| Star 数 | ~10k |
+| 许可证 | AGPL-3.0 |
+| 核心维护者 | Zedus |
 
-**项目简介**: Nitter 是一个用 Nim 语言编写的 Twitter/X 隐私友好型替代前端。它不依赖任何客户端 JavaScript，完全在服务端渲染 HTML，通过 Twitter 内部 GraphQL API 获取数据并转换为干净、轻量的页面呈现。
+**项目简介**
+
+Nitter 是一个用 Nim 语言编写的 Twitter/X 隐私友好型替代前端。它不依赖任何客户端 JavaScript，完全在服务端渲染 HTML，通过 Twitter 内部 GraphQL API 获取数据并转换为干净、轻量的页面呈现。
 
 ## 2. 技术栈
 

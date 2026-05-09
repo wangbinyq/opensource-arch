@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| Coolify | https://coolify.io | https://github.com/coollabsio/coolify | PHP 8.4 / Laravel 12 | ~35k | 开源 | coollabsio |
+| 项目 | 信息 |
+|------|------|
+| 官网 | https://coolify.io |
+| GitHub | [coollabsio/coolify](https://github.com/coollabsio/coolify) |
+| 编程语言 | PHP 8.4 / Laravel 12 |
+| Star 数 | ~35k |
+| 许可证 | 开源 |
+| 核心维护者 | coollabsio |
 
-**项目简介**: Coolify 是一个开源的、可自托管的 PaaS（Platform as a Service）平台，是 Heroku / Netlify / Vercel 的替代品。使用 PHP 8.4 / Laravel 12 构建，前端采用 Livewire 3 + Tailwind CSS v4 + Alpine.js，数据库使用 PostgreSQL 15，队列与实时通信依赖 Redis + Soketi（WebSocket 自托管方案）。
+**项目简介**
+
+Coolify 是一个开源的、可自托管的 PaaS（Platform as a Service）平台，是 Heroku / Netlify / Vercel 的替代品。使用 PHP 8.4 / Laravel 12 构建，前端采用 Livewire 3 + Tailwind CSS v4 + Alpine.js，数据库使用 PostgreSQL 15，队列与实时通信依赖 Redis + Soketi（WebSocket 自托管方案）。
 
 ## 2. 技术栈
 

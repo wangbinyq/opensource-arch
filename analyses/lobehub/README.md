@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| LobeChat | https://lobehub.com/ | LobeHub/LobeChat | TypeScript | 76k+ | 未提供 | 社区维护 |
+| 项目 | 信息 |
+|------|------|
+| 官网 | https://lobehub.com |
+| GitHub | [lobehub/lobehub](https://github.com/lobehub/lobehub) |
+| 编程语言 | TypeScript |
+| Star 数 | 76k+ |
+| 许可证 | Apache-2.0 |
+| 核心维护者 | 社区维护 |
 
-**项目简介**: LobeChat 是一个开源、全面的 AI Agent 框架，支持语音合成、多模态及可扩展的 Function Call 插件系统。它采用 Next.js 16 + React 19 + TypeScript，基于 pnpm monorepo 组织，使用 zustand 状态管理、tRPC 通信、Drizzle ORM 和 PostgreSQL 数据库。
+**项目简介**
+
+LobeChat 是一个开源、全面的 AI Agent 框架，支持语音合成、多模态及可扩展的 Function Call 插件系统。它采用 Next.js 16 + React 19 + TypeScript，基于 pnpm monorepo 组织，使用 zustand 状态管理、tRPC 通信、Drizzle ORM 和 PostgreSQL 数据库。
 
 ## 2. 技术栈
 

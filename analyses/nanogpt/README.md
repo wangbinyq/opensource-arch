@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| nanoGPT | — | [github.com/karpathy/nanogpt](https://github.com/karpathy/nanogpt) | Python | ~32k (截至2026) | MIT | Andrej Karpathy |
+| 项目 | 信息 |
+|------|------|
+| 官网 | — |
+| GitHub | [github.com/karpathy/nanogpt](https://github.com/karpathy/nanogpt) |
+| 编程语言 | Python |
+| Star 数 | ~32k |
+| 许可证 | MIT |
+| 核心维护者 | Andrej Karpathy |
 
-**项目简介**: nanoGPT 是 Andrej Karpathy 开发的最简最快的中等规模 GPT 训练/微调框架，是 minGPT 的重写，追求效率胜于教育性。项目采用极简单体架构，核心逻辑集中在 `train.py`（~300行）和 `model.py`（~350行）两个文件中。
+**项目简介**
+
+nanoGPT 是 Andrej Karpathy 开发的最简最快的中等规模 GPT 训练/微调框架，是 minGPT 的重写，追求效率胜于教育性。项目采用极简单体架构，核心逻辑集中在 `train.py`（~300行）和 `model.py`（~350行）两个文件中。
 
 ## 2. 技术栈
 

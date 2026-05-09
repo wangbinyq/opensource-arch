@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| Dokploy | - | https://github.com/dokploy/dokploy | TypeScript (全栈) | ~15k | AGPL-3.0 | 社区维护 |
+| 项目 | 信息 |
+|------|------|
+| 官网 | — |
+| GitHub | [dokploy/dokploy](https://github.com/dokploy/dokploy) |
+| 编程语言 | TypeScript (全栈) |
+| Star 数 | ~15k |
+| 许可证 | AGPL-3.0 |
+| 核心维护者 | 社区维护 |
 
-**项目简介**: Dokploy 是一个开源的、可自托管的 PaaS 平台，是 Heroku / Vercel / Netlify 的替代方案。它允许用户在自有的 VPS 上一键部署应用、管理数据库、配置域名/SSL、自动备份，并通过 Docker Swarm 实现多节点集群。
+**项目简介**
+
+Dokploy 是一个开源的、可自托管的 PaaS 平台，是 Heroku / Vercel / Netlify 的替代方案。它允许用户在自有的 VPS 上一键部署应用、管理数据库、配置域名/SSL、自动备份，并通过 Docker Swarm 实现多节点集群。
 
 ## 2. 技术栈
 

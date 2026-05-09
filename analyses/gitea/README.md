@@ -4,11 +4,18 @@
 
 ## 1. 项目概览
 
-| 项目 | 官网 | GitHub | 编程语言 | Star 数 | 许可证 | 核心维护者 |
-|------|------|--------|----------|---------|--------|------------|
-| Gitea | https://gitea.io | https://github.com/go-gitea/gitea | Go 1.26 + Vue.js | ~48k | MIT | 社区维护 |
+| 项目 | 信息 |
+|------|------|
+| 官网 | https://gitea.io |
+| GitHub | [go-gitea/gitea](https://github.com/go-gitea/gitea) |
+| 编程语言 | Go 1.26 + Vue.js |
+| Star 数 | ~48k |
+| 许可证 | MIT |
+| 核心维护者 | 社区维护 |
 
-**项目简介**: Gitea 是一个轻量级、自托管的 Git 服务，提供类似于 GitHub 的功能（代码托管、Issue 跟踪、Pull Request、CI/CD、包管理等）。它以 Go 编写，性能优异且部署简单，适合个人和小团队使用，也支持大规模企业部署。
+**项目简介**
+
+Gitea 是一个轻量级、自托管的 Git 服务，提供类似于 GitHub 的功能（代码托管、Issue 跟踪、Pull Request、CI/CD、包管理等）。它以 Go 编写，性能优异且部署简单，适合个人和小团队使用，也支持大规模企业部署。
 
 ## 2. 技术栈
 
