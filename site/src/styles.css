@@ -173,6 +173,26 @@ body {
   max-width: 55ch;
 }
 
+.index__sub-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+  margin-bottom: var(--sp-sm);
+  padding-left: var(--sp-lg);
+}
+
+.index__sub-link {
+  font-size: 0.88rem;
+  color: var(--fg-muted);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease-out);
+}
+
+.index__sub-link:hover {
+  color: var(--accent);
+}
+
 /* --- Article page --- */
 
 .article-header {

@@ -260,6 +260,13 @@ function parseMarkdown(md: string): string {
 
 // ─── Extract metadata from MD ────────────────────────
 
+interface SubArticleMeta {
+  slug: string;
+  title: string;
+  html: string;
+  file: string;
+}
+
 interface AnalysisMeta {
   slug: string;
   title: string;
@@ -268,6 +275,7 @@ interface AnalysisMeta {
   language: string;
   description: string;
   html: string;
+  subArticles: SubArticleMeta[];
 }
 
 function extractTitle(md: string): string {
@@ -302,6 +310,18 @@ function extractDescription(md: string): string {
   return "";
 }
 
+// ─── Sub-article processing ─────────────────────────
+
+async function processSubArticle(dir: string, file: string): Promise<SubArticleMeta> {
+  const md = await readFile(join(dir, file), "utf-8");
+  return {
+    slug: file.replace(/\.md$/, ""),
+    title: extractTitle(md),
+    html: parseMarkdown(md),
+    file,
+  };
+}
+
 // ─── HTML templates ──────────────────────────────────
 
 function renderHead(title: string, description: string = ""): string {
@@ -330,15 +350,22 @@ function renderHead(title: string, description: string = ""): string {
 
 function renderIndexPage(analyses: AnalysisMeta[]): string {
   const items = analyses
-    .map(
-      (a) => `    <li class="index__item">
+    .map((a) => {
+      const subLinks = a.subArticles.length > 0
+        ? `\n      <div class="index__sub-links">\n` +
+          a.subArticles.map(sa =>
+            `        <a class="index__sub-link" href="${BASE_PATH}/${a.slug}/${sa.slug}/">${escapeHtml(sa.title)}</a>`
+          ).join("\n") +
+          `\n      </div>`
+        : "";
+      return `    <li class="index__item">
       <a class="index__link" href="${BASE_PATH}/${a.slug}/">
         <span class="index__name">${escapeHtml(a.title)}</span>
         <span class="index__meta">${a.language}</span>
       </a>
-      ${a.description ? `<p class="index__desc">${escapeHtml(a.description)}</p>` : ""}
-    </li>`
-    )
+      ${a.description ? `<p class="index__desc">${escapeHtml(a.description)}</p>` : ""}${subLinks}
+    </li>`;
+    })
     .join("\n");
 
   return `${renderHead(SITE_TITLE, SITE_TAGLINE)}
@@ -395,6 +422,32 @@ function renderArticlePage(a: AnalysisMeta): string {
 </html>`;
 }
 
+function renderSubArticlePage(parent: AnalysisMeta, article: SubArticleMeta): string {
+  return `${renderHead(article.title)}
+<body>
+  <div class="page">
+    <a class="back-link" href="${BASE_PATH}/${parent.slug}/">
+      <span class="back-link__arrow">←</span> ${escapeHtml(parent.title)}
+    </a>
+
+    <article>
+      <header class="article-header">
+        <h1 class="article-header__title">${escapeHtml(article.title)}</h1>
+      </header>
+
+      <div class="article-body">
+        ${article.html}
+      </div>
+    </article>
+
+    <footer class="site-footer">
+      <p><a href="${BASE_PATH}/${parent.slug}/">← ${escapeHtml(parent.title)}</a> · <a href="${BASE_PATH}/">返回目录</a> · <a href="https://github.com/wangbinyq/opensource-arch">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>`;
+}
+
 // ─── Build pipeline ──────────────────────────────────
 
 async function scanAnalyses(): Promise<string[]> {
@@ -405,9 +458,22 @@ async function scanAnalyses(): Promise<string[]> {
 }
 
 async function processAnalysis(slug: string): Promise<AnalysisMeta> {
-  const mdPath = join(ANALYSES_DIR, slug, "README.md");
-  const md = await readFile(mdPath, "utf-8");
+  const dir = join(ANALYSES_DIR, slug);
+  const files = (await readdir(dir)).filter(f => f.endsWith(".md"));
+
+  // README.md is required
+  const readmeFile = files.find(f => f.toLowerCase() === "readme.md");
+  if (!readmeFile) throw new Error(`No README.md found in ${slug}`);
+
+  const md = await readFile(join(dir, readmeFile), "utf-8");
   const { version, date } = extractSubtitle(md);
+
+  // Process sub-articles (non-README .md files)
+  const subArticles: SubArticleMeta[] = [];
+  for (const file of files) {
+    if (file.toLowerCase() === "readme.md") continue;
+    subArticles.push(await processSubArticle(dir, file));
+  }
 
   return {
     slug,
@@ -417,6 +483,7 @@ async function processAnalysis(slug: string): Promise<AnalysisMeta> {
     language: extractLanguage(md),
     description: extractDescription(md),
     html: parseMarkdown(md),
+    subArticles,
   };
 }
 
@@ -465,6 +532,14 @@ async function build() {
     const articleHtml = renderArticlePage(a);
     await writeFile(join(articleDir, "index.html"), articleHtml);
     console.log(`  Generated: ${a.slug}/index.html`);
+
+    // Generate sub-article pages
+    for (const sa of a.subArticles) {
+      const subDir = join(articleDir, sa.slug);
+      await mkdir(subDir, { recursive: true });
+      await writeFile(join(subDir, "index.html"), renderSubArticlePage(a, sa));
+      console.log(`  Generated: ${a.slug}/${sa.slug}/index.html`);
+    }
   }
 
   // Bundle JS
