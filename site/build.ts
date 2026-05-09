@@ -349,23 +349,33 @@ function renderHead(title: string, description: string = ""): string {
 }
 
 function renderIndexPage(analyses: AnalysisMeta[]): string {
-  const items = analyses
-    .map((a) => {
-      const subLinks = a.subArticles.length > 0
-        ? `\n      <div class="index__sub-links">\n` +
-          a.subArticles.map(sa =>
-            `        <a class="index__sub-link" href="${BASE_PATH}/${a.slug}/${sa.slug}/">${escapeHtml(sa.title)}</a>`
-          ).join("\n") +
-          `\n      </div>`
-        : "";
-      return `    <li class="index__item">
-      <a class="index__link" href="${BASE_PATH}/${a.slug}/">
-        <span class="index__name">${escapeHtml(a.title)}</span>
-        <span class="index__meta">${a.language}</span>
+  // Build flat list: main analyses + sub-articles as standalone items
+  const flatItems: Array<{ href: string; title: string; language: string; description: string }> = [];
+  for (const a of analyses) {
+    flatItems.push({
+      href: `${BASE_PATH}/${a.slug}/`,
+      title: a.title,
+      language: a.language,
+      description: a.description,
+    });
+    for (const sa of a.subArticles) {
+      flatItems.push({
+        href: `${BASE_PATH}/${a.slug}/${sa.slug}/`,
+        title: sa.title,
+        language: "",
+        description: "",
+      });
+    }
+  }
+
+  const items = flatItems
+    .map((item) => `    <li class="index__item">
+      <a class="index__link" href="${item.href}">
+        <span class="index__name">${escapeHtml(item.title)}</span>
+        ${item.language ? `<span class="index__meta">${item.language}</span>` : ""}
       </a>
-      ${a.description ? `<p class="index__desc">${escapeHtml(a.description)}</p>` : ""}${subLinks}
-    </li>`;
-    })
+      ${item.description ? `<p class="index__desc">${escapeHtml(item.description)}</p>` : ""}
+    </li>`)
     .join("\n");
 
   return `${renderHead(SITE_TITLE, SITE_TAGLINE)}
