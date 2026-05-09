@@ -183,8 +183,8 @@ body {
 }
 
 .index__sub-link {
-  font-size: 0.88rem;
-  color: var(--fg-muted);
+  font-size: 0.9rem;
+  color: var(--fg);
   text-decoration: none;
   transition: color var(--duration) var(--ease-out);
   border-radius: 2px;
@@ -192,6 +192,9 @@ body {
 
 .index__sub-link:hover {
   color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
 }
 
 .index__sub-link:focus-visible {
