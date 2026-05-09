@@ -276,9 +276,10 @@ function extractTitle(md: string): string {
 }
 
 function extractSubtitle(md: string): { version: string; date: string } {
-  const m = md.match(/>.*?v?([\d.v]+).*?(\d{4}-\d{2}-\d{2})/);
+  // Version is optional — some analyses use "最终版" / "最新版"
+  const m = md.match(/>.*?(?:v?([\d.v]+).*?)?(\d{4}-\d{2}-\d{2})/);
   return {
-    version: m ? m[1] : "",
+    version: m ? (m[1] || "") : "",
     date: m ? m[2] : "",
   };
 }
@@ -445,8 +446,12 @@ async function build() {
     console.log(`  Processed: ${meta.title}`);
   }
 
-  // Sort by title
-  analyses.sort((a, b) => a.title.localeCompare(b.title, "zh-CN"));
+  // Sort by date descending (newest first), then by title
+  analyses.sort((a, b) => {
+    const dateCmp = b.date.localeCompare(a.date); // desc
+    if (dateCmp !== 0) return dateCmp;
+    return a.title.localeCompare(b.title, "zh-CN"); // asc
+  });
 
   // Generate index page
   const indexHtml = renderIndexPage(analyses);
