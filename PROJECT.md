@@ -31,7 +31,7 @@
 | 2 | **New-API** | AI API 网关 | 2026-05-08 | [analyses/new-api/](./analyses/new-api/) |
 | 3 | **RSSHub** | RSS 聚合器 | 2026-05-08 | [analyses/rsshub/](./analyses/rsshub/) |
 | 4 | **nanoGPT** | GPT 训练框架 | 2026-05-09 | [analyses/nanogpt/](./analyses/nanogpt/) |
-| 5 | **LobeChat** | AI Agent 框架 | 2026-05-09 | [analyses/lobehub/](./analyses/lobehub/) |
+| 5 | **LobeChat** | AI Agent 框架 | 2026-05-09 | [analyses/lobehub/](./analyses/lobehub/) · [状态管理层](./analyses/lobehub/state-management.md) |
 | 6 | **Coolify** | 自托管 PaaS | 2026-05-09 | [analyses/coolify/](./analyses/coolify/) |
 | 7 | **Dokploy** | 自托管 PaaS | 2026-05-09 | [analyses/dokploy/](./analyses/dokploy/) |
 | 8 | **pi-mono** | AI Agent 框架 | 2026-05-09 | [analyses/pi-mono/](./analyses/pi-mono/) |
