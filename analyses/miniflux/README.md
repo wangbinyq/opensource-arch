@@ -224,7 +224,7 @@ sequenceDiagram
     participant Integration as integration
 
     Scheduler->>BatchBuilder: 定时触发<br/>(默认每60秒)
-    BatchBuilder->>Storage: SELECT feeds WHERE next_check_at < now()
+    BatchBuilder->>Storage: SELECT feeds WHERE next_check_at 小于 now()
     Storage-->>BatchBuilder: 返回过期 feeds
     BatchBuilder-->>Scheduler: JobList
     Scheduler->>Pool: Push(jobs)
@@ -487,7 +487,7 @@ sequenceDiagram
     participant Processor as "Processor"
     participant Integration as "第三方集成"
 
-    Cron->>DB: 查询过期 feeds (next_check_at < now())
+    Cron->>DB: 查询过期 feeds (next_check_at 小于 now())
     DB-->>Cron: 返回 jobs (limit batch_size, 限制 per host)
     Cron->>Worker: Push jobs to channel
     Worker->>Fetcher: 构建 HTTP 请求 (含 ETag/Last-Modified)

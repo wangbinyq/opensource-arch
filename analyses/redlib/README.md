@@ -164,7 +164,7 @@ sequenceDiagram
         C-->>S: 返回缓存的 JSON
     else 缓存未命中
         S->>OA: 读取 Authorization 头
-        OA-->>S: Bearer &lt;token&gt;
+        OA-->>S: Bearer [token]
         S->>RA: GET /r/rust/about.json (伪造头)
         RA-->>S: JSON + x-ratelimit-remaining
         S->>S: 解析 JSON → Subreddit
