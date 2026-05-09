@@ -130,6 +130,8 @@ graph TB
 
 基于泛型 (`Queue[T]`) 的类型安全队列，支持持久化（LevelDB/Redis）和内存两种后端。`Manager` 管理所有队列的生命周期。
 
+> 📖 **[queue 模块深度分析](./queue-module.md)** — 涵盖架构分层、WorkerPoolQueue 生命周期、Handler 重入机制、各后端实现、指数退避、优雅关闭、测试模式及已知限制
+
 ### 4.6 优雅启停系统（`modules/graceful/`）
 
 状态生命周期：`Init → Running → ShuttingDown → Hammer → Terminate`。`ShutdownContext` (可正常处理) → `HammerContext` (强制超时) → `TerminateContext` (最终清理)。
