@@ -4,6 +4,8 @@ analyses/daily-summary-*.md
 analyses/daily-summary-*.json
 events.jsonl
 views.json
+automations*
+analyses/_sessions/
 .claude-plugin/
 sessions/
 labels/
