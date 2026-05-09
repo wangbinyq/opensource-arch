@@ -106,20 +106,22 @@
 
 ## Git 提交记录
 
-<!-- 提交后将在此记录 commit hash -->
+```
+0e45e63 📝 架构分析: nanogpt, lobehub, coolify, dokploy, pi-mono, gitea, nitter, redlib
+```
 
 ## 已关闭的 Issue
 
 | Issue | 标题 | 状态 |
 |-------|------|------|
-| [#4](https://github.com/wangbinyq/opensource-arch/issues/4) | 架构分析: redlib | ⏳ 待关闭 |
-| [#5](https://github.com/wangbinyq/opensource-arch/issues/5) | 架构分析: nitter | ⏳ 待关闭 |
-| [#6](https://github.com/wangbinyq/opensource-arch/issues/6) | 架构分析: gitea | ⏳ 待关闭 |
-| [#7](https://github.com/wangbinyq/opensource-arch/issues/7) | 架构分析: pi agent | ⏳ 待关闭 |
-| [#8](https://github.com/wangbinyq/opensource-arch/issues/8) | 架构分析: dokploy | ⏳ 待关闭 |
-| [#9](https://github.com/wangbinyq/opensource-arch/issues/9) | 架构分析: coolify | ⏳ 待关闭 |
-| [#10](https://github.com/wangbinyq/opensource-arch/issues/10) | 架构分析: lobehub | ⏳ 待关闭 |
-| [#11](https://github.com/wangbinyq/opensource-arch/issues/11) | 架构分析: nanogpt | ⏳ 待关闭 |
+| [#4](https://github.com/wangbinyq/opensource-arch/issues/4) | 架构分析: redlib | ✅ 已关闭 |
+| [#5](https://github.com/wangbinyq/opensource-arch/issues/5) | 架构分析: nitter | ✅ 已关闭 |
+| [#6](https://github.com/wangbinyq/opensource-arch/issues/6) | 架构分析: gitea | ✅ 已关闭 |
+| [#7](https://github.com/wangbinyq/opensource-arch/issues/7) | 架构分析: pi agent | ✅ 已关闭 |
+| [#8](https://github.com/wangbinyq/opensource-arch/issues/8) | 架构分析: dokploy | ✅ 已关闭 |
+| [#9](https://github.com/wangbinyq/opensource-arch/issues/9) | 架构分析: coolify | ✅ 已关闭 |
+| [#10](https://github.com/wangbinyq/opensource-arch/issues/10) | 架构分析: lobehub | ✅ 已关闭 |
+| [#11](https://github.com/wangbinyq/opensource-arch/issues/11) | 架构分析: nanogpt | ✅ 已关闭 |
 
 ---
 
